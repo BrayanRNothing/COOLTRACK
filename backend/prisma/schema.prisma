@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RolUsuario {
+  ADMIN
+  TECNICO_CONTRATISTA
+}
+
+model Usuario {
+  id              String          @id @default(uuid()) @db.Uuid
+  nombres         String
+  apellidoPaterno String          @map("apellido_paterno")
+  apellidoMaterno String          @map("apellido_materno")
+  email           String          @unique
+  telefono        String?
+  passwordHash    String          @map("password_hash")
+  rol             RolUsuario
+  mantenimientos  Mantenimiento[]
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  @@map("usuarios")
+}
+
+model Cliente {
+  id              String             @id @default(uuid()) @db.Uuid
+  numeroCliente   String             @unique @map("numero_cliente")
+  nombreOEmpresa  String             @map("nombre_o_empresa")
+  telefono        String?
+  email           String?
+  climas          ClimaIndustrial[]
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+
+  @@map("clientes")
+}
+
+model ClimaIndustrial {
+  id                String          @id @default(uuid()) @db.Uuid
+  numeroSerie       String          @unique @map("numero_serie")
+  marca             String
+  modelo            String
+  fechaAplicacion   DateTime        @map("fecha_aplicacion") @db.Date
+  geolocalizacion   String
+  idCliente         String          @map("id_cliente") @db.Uuid
+  cliente           Cliente         @relation(fields: [idCliente], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  mantenimientos    Mantenimiento[]
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+
+  @@index([idCliente])
+  @@map("climas_industriales")
+}
+
+model Mantenimiento {
+  id                String          @id @default(uuid()) @db.Uuid
+  idClima           String          @map("id_clima") @db.Uuid
+  idTecnico         String          @map("id_tecnico") @db.Uuid
+  fechaMantenimiento DateTime       @map("fecha_mantenimiento")
+  foto1Url          String?         @map("foto_1_url")
+  foto2Url          String?         @map("foto_2_url")
+  foto3Url          String?         @map("foto_3_url")
+  observaciones     String?
+  clima             ClimaIndustrial @relation(fields: [idClima], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  tecnico           Usuario         @relation(fields: [idTecnico], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+
+  @@index([idClima])
+  @@index([idTecnico])
+  @@index([fechaMantenimiento])
+  @@map("mantenimientos")
+}
