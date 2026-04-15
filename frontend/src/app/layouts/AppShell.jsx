@@ -7,8 +7,7 @@ const linksByRole = {
     { to: '/admin/tecnicos', label: 'Tecnicos' },
   ],
   technician: [
-    { to: '/tecnico/dashboard', label: 'Mis trabajos' },
-    { to: '/tecnico/mantenimientos/nuevo', label: 'Registrar mantenimiento' },
+    { to: '/tecnico/dashboard', label: 'Mis clientes' },
   ],
 }
 

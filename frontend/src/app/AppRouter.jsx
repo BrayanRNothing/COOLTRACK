@@ -9,7 +9,8 @@ import CondenserProfilePage from '../features/admin/pages/CondenserProfilePage'
 import TechniciansPage from '../features/admin/pages/TechniciansPage'
 import TechnicianProfilePage from '../features/admin/pages/TechnicianProfilePage'
 import TechnicianDashboardPage from '../features/technician/pages/TechnicianDashboardPage'
-import MaintenanceRegisterPage from '../features/technician/pages/MaintenanceRegisterPage'
+import TechnicianClientCondensersPage from '../features/technician/pages/TechnicianClientCondensersPage'
+import TechnicianCondenserCapturePage from '../features/technician/pages/TechnicianCondenserCapturePage'
 import NotFoundPage from '../features/common/pages/NotFoundPage'
 
 function HomeRedirect() {
@@ -81,10 +82,26 @@ export default function AppRouter() {
           }
         />
         <Route
+          path="/tecnico/clientes/:clientId/condensadores"
+          element={
+            <ProtectedRoute allowedRoles={['technician']}>
+              <TechnicianClientCondensersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tecnico/clientes/:clientId/condensadores/:condenserId/captura"
+          element={
+            <ProtectedRoute allowedRoles={['technician']}>
+              <TechnicianCondenserCapturePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/tecnico/mantenimientos/nuevo"
           element={
             <ProtectedRoute allowedRoles={['technician']}>
-              <MaintenanceRegisterPage />
+              <Navigate to="/tecnico/dashboard" replace />
             </ProtectedRoute>
           }
         />

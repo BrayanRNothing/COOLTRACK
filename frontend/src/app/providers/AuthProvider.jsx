@@ -6,7 +6,7 @@ export function AuthProvider({ children }) {
 
   const loginAs = (role) => {
     const safeRole = role === 'admin' ? 'admin' : 'technician'
-    setCurrentUser({ role: safeRole, name: safeRole === 'admin' ? 'Administrador' : 'Tecnico Contratista' })
+    setCurrentUser({ role: safeRole, name: safeRole === 'admin' ? 'Administrador' : 'Carlos Rojas' })
   }
 
   const logout = () => setCurrentUser(null)

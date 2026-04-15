@@ -80,6 +80,26 @@ export default function CondenserProfilePage() {
             <p className="text-sm font-semibold">Resumen tecnico</p>
             <dl className="mt-3 space-y-2 text-sm">
               <div className="flex items-center justify-between gap-3">
+                <dt className="text-base-content/60">Marca</dt>
+                <dd className="font-medium">{condenser.brand ?? 'Sin dato'}</dd>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <dt className="text-base-content/60">Modelo</dt>
+                <dd className="font-medium">{condenser.model ?? 'Sin dato'}</dd>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <dt className="text-base-content/60">Fecha de aplicacion</dt>
+                <dd className="font-medium">{condenser.applicationDate ?? 'Sin dato'}</dd>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <dt className="text-base-content/60">Geolocalizacion</dt>
+                <dd className="font-medium">{condenser.geolocation ?? 'Sin dato'}</dd>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <dt className="text-base-content/60">Cliente final</dt>
+                <dd className="font-medium">{condenser.finalClient ?? 'Sin dato'}</dd>
+              </div>
+              <div className="flex items-center justify-between gap-3">
                 <dt className="text-base-content/60">Cliente</dt>
                 <dd className="font-medium">{client.name}</dd>
               </div>
