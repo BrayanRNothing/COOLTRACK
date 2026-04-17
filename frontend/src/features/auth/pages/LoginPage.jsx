@@ -6,7 +6,7 @@ import Button from '../../../shared/ui/Button'
 export default function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -16,7 +16,7 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
     try {
-      const user = await login(email, password)
+      const user = await login(username, password)
       if (user.rol === 'ADMIN') {
         navigate('/admin/clientes')
       } else {
@@ -38,13 +38,13 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="grid gap-4">
           <label className="form-control">
-            <span className="label-text mb-1 font-medium">Correo electrónico</span>
+            <span className="label-text mb-1 font-medium">Usuario</span>
             <input
-              type="email"
+              type="text"
               className="input input-bordered"
-              placeholder="correo@empresa.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              placeholder="tu_usuario"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
               autoFocus
             />

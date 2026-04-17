@@ -29,7 +29,7 @@ app.use(express.json())
 
 const usuarioSafeSelect = {
   id: true, nombres: true, apellidoPaterno: true, apellidoMaterno: true,
-  email: true, telefono: true, rol: true, createdAt: true, updatedAt: true,
+  email: true, username: true, telefono: true, rol: true, createdAt: true, updatedAt: true,
 }
 
 const isValidRole = (rol) => Object.values(RolUsuario).includes(rol)
@@ -73,12 +73,12 @@ app.post('/api/auth/bootstrap', async (req, res) => {
   try {
     const count = await prisma.usuario.count({ where: { rol: 'ADMIN' } })
     if (count > 0) return res.status(409).json({ message: 'Ya existe un administrador. Usa el login normal.' })
-    const { nombres, apellidoPaterno, apellidoMaterno, email, password } = req.body
-    if (!nombres || !apellidoPaterno || !apellidoMaterno || !email || !password)
+    const { nombres, apellidoPaterno, apellidoMaterno, email, username, password } = req.body
+    if (!nombres || !apellidoPaterno || !apellidoMaterno || !email || !username || !password)
       return res.status(400).json({ message: 'Faltan campos.' })
     const passwordHash = await bcrypt.hash(password, 10)
     const usuario = await prisma.usuario.create({
-      data: { nombres, apellidoPaterno, apellidoMaterno, email, passwordHash, rol: 'ADMIN' },
+      data: { nombres, apellidoPaterno, apellidoMaterno, email, username, passwordHash, rol: 'ADMIN' },
       select: usuarioSafeSelect,
     })
     return res.status(201).json(usuario)
@@ -88,18 +88,18 @@ app.post('/api/auth/bootstrap', async (req, res) => {
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
 app.post('/api/auth/login', async (req, res) => {
-  const { email, password } = req.body
-  if (!email || !password) return res.status(400).json({ message: 'Email y contraseña son requeridos.' })
+  const { username, password } = req.body
+  if (!username || !password) return res.status(400).json({ message: 'Usuario y contraseña son requeridos.' })
 
   try {
-    const usuario = await prisma.usuario.findUnique({ where: { email } })
+    const usuario = await prisma.usuario.findUnique({ where: { username } })
     if (!usuario) return res.status(401).json({ message: 'Credenciales incorrectas.' })
 
     const valid = await bcrypt.compare(password, usuario.passwordHash)
     if (!valid) return res.status(401).json({ message: 'Credenciales incorrectas.' })
 
     const token = jwt.sign(
-      { id: usuario.id, email: usuario.email, rol: usuario.rol, nombres: usuario.nombres, apellidoPaterno: usuario.apellidoPaterno },
+      { id: usuario.id, username: usuario.username, email: usuario.email, rol: usuario.rol, nombres: usuario.nombres, apellidoPaterno: usuario.apellidoPaterno },
       JWT_SECRET,
       { expiresIn: '7d' }
     )
@@ -182,14 +182,14 @@ app.get('/api/usuarios/:id', requireAuth, requireAdmin, async (req, res) => {
 })
 
 app.post('/api/usuarios', requireAuth, requireAdmin, async (req, res) => {
-  const { nombres, apellidoPaterno, apellidoMaterno, email, telefono, password, rol } = req.body
-  if (!nombres || !apellidoPaterno || !apellidoMaterno || !email || !password || !rol)
+  const { nombres, apellidoPaterno, apellidoMaterno, email, username, telefono, password, rol } = req.body
+  if (!nombres || !apellidoPaterno || !apellidoMaterno || !email || !username || !password || !rol)
     return res.status(400).json({ message: 'Faltan campos obligatorios.' })
   if (!isValidRole(rol)) return res.status(400).json({ message: 'Rol inválido.' })
   try {
     const passwordHash = await bcrypt.hash(password, 10)
     const usuario = await prisma.usuario.create({
-      data: { nombres, apellidoPaterno, apellidoMaterno, email, telefono, passwordHash, rol },
+      data: { nombres, apellidoPaterno, apellidoMaterno, email, username, telefono, passwordHash, rol },
       select: usuarioSafeSelect,
     })
     return res.status(201).json(usuario)
@@ -197,10 +197,10 @@ app.post('/api/usuarios', requireAuth, requireAdmin, async (req, res) => {
 })
 
 app.put('/api/usuarios/:id', requireAuth, requireAdmin, async (req, res) => {
-  const { nombres, apellidoPaterno, apellidoMaterno, email, telefono, password, rol } = req.body
+  const { nombres, apellidoPaterno, apellidoMaterno, email, username, telefono, password, rol } = req.body
   if (rol && !isValidRole(rol)) return res.status(400).json({ message: 'Rol inválido.' })
   try {
-    const data = { nombres, apellidoPaterno, apellidoMaterno, email, telefono, rol }
+    const data = { nombres, apellidoPaterno, apellidoMaterno, email, username, telefono, rol }
     if (password) data.passwordHash = await bcrypt.hash(password, 10)
     const usuario = await prisma.usuario.update({ where: { id: req.params.id }, data, select: usuarioSafeSelect })
     return res.json(usuario)

@@ -13,6 +13,7 @@ model Usuario {
   apellidoPaterno String          @map("apellido_paterno")
   apellidoMaterno String          @map("apellido_materno")
   email           String          @unique
+  username        String          @unique
   telefono        String?
   passwordHash    String          @map("password_hash")
   rol             RolUsuario

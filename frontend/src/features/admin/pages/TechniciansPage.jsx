@@ -13,7 +13,7 @@ export default function TechniciansPage() {
   const [error, setError] = useState('')
   const [modal, setModal] = useState(null)
   const [selected, setSelected] = useState(null)
-  const [form, setForm] = useState({ nombres: '', apellidoPaterno: '', apellidoMaterno: '', email: '', telefono: '', password: '', rol: 'TECNICO_CONTRATISTA' })
+  const [form, setForm] = useState({ nombres: '', apellidoPaterno: '', apellidoMaterno: '', email: '', username: '', telefono: '', password: '', rol: 'TECNICO_CONTRATISTA' })
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
 
@@ -27,8 +27,8 @@ export default function TechniciansPage() {
 
   useEffect(() => { fetchTecnicos() }, [fetchTecnicos])
 
-  const openCreate = () => { setForm({ nombres: '', apellidoPaterno: '', apellidoMaterno: '', email: '', telefono: '', password: '', rol: 'TECNICO_CONTRATISTA' }); setFormError(''); setModal('create') }
-  const openEdit = (u) => { setSelected(u); setForm({ nombres: u.nombres, apellidoPaterno: u.apellidoPaterno, apellidoMaterno: u.apellidoMaterno, email: u.email, telefono: u.telefono || '', password: '', rol: u.rol }); setFormError(''); setModal('edit') }
+  const openCreate = () => { setForm({ nombres: '', apellidoPaterno: '', apellidoMaterno: '', email: '', username: '', telefono: '', password: '', rol: 'TECNICO_CONTRATISTA' }); setFormError(''); setModal('create') }
+  const openEdit = (u) => { setSelected(u); setForm({ nombres: u.nombres, apellidoPaterno: u.apellidoPaterno, apellidoMaterno: u.apellidoMaterno, email: u.email, username: u.username || '', telefono: u.telefono || '', password: '', rol: u.rol }); setFormError(''); setModal('edit') }
   const openDelete = (u) => { setSelected(u); setFormError(''); setModal('delete') }
   const closeModal = () => { setModal(null); setSelected(null) }
 
@@ -62,6 +62,7 @@ export default function TechniciansPage() {
     { key: 'nombres', header: 'Nombre' },
     { key: 'apellidoPaterno', header: 'Apellido' },
     { key: 'email', header: 'Email' },
+    { key: 'username', header: 'Usuario' },
     { key: 'telefono', header: 'Teléfono' },
     { 
       key: 'edit', 
@@ -103,6 +104,7 @@ export default function TechniciansPage() {
               <label className="form-control"><span className="label-text mb-1">Apellido Materno *</span><input className="input input-bordered" value={form.apellidoMaterno} onChange={e => setForm(p => ({...p, apellidoMaterno: e.target.value}))} required /></label>
               <label className="form-control"><span className="label-text mb-1">Teléfono</span><input className="input input-bordered" value={form.telefono} onChange={e => setForm(p => ({...p, telefono: e.target.value}))} /></label>
               <label className="form-control sm:col-span-2"><span className="label-text mb-1">Email *</span><input type="email" className="input input-bordered" value={form.email} onChange={e => setForm(p => ({...p, email: e.target.value}))} required /></label>
+              <label className="form-control sm:col-span-2"><span className="label-text mb-1">Usuario *</span><input className="input input-bordered" value={form.username} onChange={e => setForm(p => ({...p, username: e.target.value}))} required /></label>
               <label className="form-control sm:col-span-2"><span className="label-text mb-1">{modal === 'edit' ? 'Nueva contraseña (dejar vacío para no cambiar)' : 'Contraseña *'}</span><input type="password" className="input input-bordered" value={form.password} onChange={e => setForm(p => ({...p, password: e.target.value}))} required={modal === 'create'} /></label>
               {formError && <p className="text-sm text-error sm:col-span-2">{formError}</p>}
               <div className="modal-action sm:col-span-2"><Button type="button" onClick={closeModal} variant="outline">Cancelar</Button><Button type="submit" disabled={saving}>{saving ? 'Guardando...' : 'Guardar'}</Button></div>

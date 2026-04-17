@@ -1,9 +1,9 @@
 import { apiFetch, setToken, removeToken } from './api'
 
-export async function login(email, password) {
+export async function login(username, password) {
   const data = await apiFetch('/api/auth/login', {
     method: 'POST',
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ username, password }),
   })
   setToken(data.token)
   return data // { token, user }
