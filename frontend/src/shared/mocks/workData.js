@@ -1,5 +1,5 @@
 export const clients = [
-  { id: 'CL-001', name: 'Plaza Norte', city: 'Lima', condensers: 2 },
+  { id: 'CL-001', name: 'Plaza Norte', city: 'Lima', condensers: 3 },
   { id: 'CL-002', name: 'Clinica Central', city: 'Arequipa', condensers: 3 },
   { id: 'CL-003', name: 'Hotel Pacifik', city: 'Trujillo', condensers: 1 },
 ]
@@ -56,6 +56,14 @@ export const condensers = [
     completedThisYear: 0,
     nextDate: '2026-04-28',
   },
+  {
+    id: 'CD-103',
+    clientName: 'Plaza Norte',
+    serial: 'CN-PL-2025-FULL',
+    annualMaintenances: 3,
+    completedThisYear: 0,
+    nextDate: '2026-06-01',
+  },
 ]
 
 export const technicianTasks = [
@@ -67,6 +75,7 @@ export const technicianTasks = [
     type: 'Mantenimiento preventivo',
     scheduledDate: '2026-04-28',
     status: 'Pendiente',
+    notes: 'Revisar filtro principal del modulo A.',
   },
   {
     id: 'TK-9002',
@@ -76,6 +85,7 @@ export const technicianTasks = [
     type: 'Inspeccion de rutina',
     scheduledDate: '2026-05-03',
     status: 'Asignado',
+    notes: 'Cliente reporta ruido en ventilador.',
   },
 ]
 
@@ -109,7 +119,72 @@ export const maintenanceRecords = [
     performedBy: 'Carlos Rojas',
     performedAt: '2026-03-12',
     performedAtTime: '2026-03-12T10:30:00-05:00',
+    geoLocation: {
+      latitude: -12.0464,
+      longitude: -77.0428,
+      reference: 'Azotea bloque B',
+    },
+    technicalData: {
+      suctionPressurePsi: 62,
+      dischargePressurePsi: 208,
+      compressorAmp: 12.4,
+      lineVoltage: 220,
+    },
     notes: 'Se limpio serpentines y se verifico presion. Sin fugas.',
     photos: ['antes-frontal.jpg', 'despues-frontal.jpg'],
+  },
+  {
+    id: 'MR-8001',
+    taskId: 'TK-8001',
+    condenserId: 'CD-103',
+    clientName: 'Plaza Norte',
+    performedBy: 'Carlos Rojas',
+    performedAt: '2025-03-15',
+    performedAtTime: '2025-03-15T09:00:00-05:00',
+    geoLocation: { latitude: -12.0464, longitude: -77.0428, reference: 'Torre 1' },
+    technicalData: {
+      suctionPressurePsi: 60,
+      dischargePressurePsi: 200,
+      compressorAmp: 11.5,
+      lineVoltage: 220,
+    },
+    notes: 'Primer mantenimiento preventivo del ano 2025.',
+    photos: ['evidencia-01.jpg'],
+  },
+  {
+    id: 'MR-8002',
+    taskId: 'TK-8002',
+    condenserId: 'CD-103',
+    clientName: 'Plaza Norte',
+    performedBy: 'Ana Huaman',
+    performedAt: '2025-07-20',
+    performedAtTime: '2025-07-20T11:30:00-05:00',
+    geoLocation: { latitude: -12.0465, longitude: -77.0429, reference: 'Torre 1' },
+    technicalData: {
+      suctionPressurePsi: 63,
+      dischargePressurePsi: 212,
+      compressorAmp: 12.1,
+      lineVoltage: 218,
+    },
+    notes: 'Segundo mantenimiento. Filtros cambiados.',
+    photos: ['evidencia-02.jpg'],
+  },
+  {
+    id: 'MR-8003',
+    taskId: 'TK-8003',
+    condenserId: 'CD-103',
+    clientName: 'Plaza Norte',
+    performedBy: 'Luis Poma',
+    performedAt: '2025-11-05',
+    performedAtTime: '2025-11-05T14:00:00-05:00',
+    geoLocation: { latitude: -12.0463, longitude: -77.0427, reference: 'Torre 1' },
+    technicalData: {
+      suctionPressurePsi: 61,
+      dischargePressurePsi: 205,
+      compressorAmp: 11.8,
+      lineVoltage: 221,
+    },
+    notes: 'Tercer mantenimiento del ano. Ciclo 2025 completado exitosamente.',
+    photos: ['evidencia-03.jpg'],
   },
 ]

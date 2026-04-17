@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import DataTable from '../../../shared/ui/DataTable'
 import PageHeader from '../../../shared/ui/PageHeader'
 import Button from '../../../shared/ui/Button'
@@ -7,6 +7,7 @@ import { useWorkData } from '../../../app/providers/useWorkData'
 
 export default function TechnicianProfilePage() {
   const { technicianId } = useParams()
+  const navigate = useNavigate()
   const { technicians, clients, condensers, assignments, maintenanceRecords, createAssignment } =
     useWorkData()
 
@@ -126,6 +127,14 @@ export default function TechnicianProfilePage() {
               columns={assignmentColumns}
               rows={technicianAssignments}
               emptyMessage="Este tecnico aun no tiene solicitudes asignadas."
+              onRowClick={(row) => {
+                const client = clients.find((item) => item.name === row.clientName)
+                if (!client) {
+                  return
+                }
+
+                navigate(`/admin/clientes/${client.id}/condensadores/${row.condenserId}`)
+              }}
             />
           </article>
         ) : (
@@ -135,6 +144,14 @@ export default function TechnicianProfilePage() {
               columns={maintenanceHistoryColumns}
               rows={technicianMaintenanceHistory}
               emptyMessage="Este tecnico aun no tiene mantenimientos registrados."
+              onRowClick={(row) => {
+                const client = clients.find((item) => item.name === row.clientName)
+                if (!client || !row.condenserId) {
+                  return
+                }
+
+                navigate(`/admin/clientes/${client.id}/condensadores/${row.condenserId}`)
+              }}
             />
           </article>
         )}

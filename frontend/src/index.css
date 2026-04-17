@@ -1,10 +1,38 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 :root {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  --glass-opacity: 0.8;
 }
 
 body {
   margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom transitions and glass effects */
+.transition-standard {
+  @apply transition-all duration-200 ease-in-out;
+}
+
+.glass-nav {
+  @apply backdrop-blur-md bg-base-100/80 sticky top-0 z-50;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-base-300 rounded-full hover:bg-base-content/20 transition-colors;
 }
