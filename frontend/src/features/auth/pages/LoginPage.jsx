@@ -71,12 +71,12 @@ export default function LoginPage() {
                 <span className="badge badge-outline badge-sm">Acceso seguro</span>
               </div>
 
-              <div className="space-y-4.5">
-                <label className="form-control w-full gap-2.5">
+              <div className="space-y-6">
+                <label className="form-control w-full">
                   <span className="label-text text-xs font-semibold uppercase tracking-[0.12em] text-base-content/65">Usuario</span>
                   <input
                     type="text"
-                    className="input input-bordered h-12 w-full border-base-300/70 bg-base-100/90 px-4"
+                    className="input input-bordered mt-3 h-12 w-full border-base-300/70 bg-base-100/90 px-4"
                     placeholder="tu_usuario"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
@@ -86,7 +86,7 @@ export default function LoginPage() {
                   />
                 </label>
 
-                <label className="form-control w-full gap-2.5">
+                <label className="form-control w-full">
                   <div className="flex items-center justify-between gap-2">
                     <span className="label-text text-xs font-semibold uppercase tracking-[0.12em] text-base-content/65">Contraseña</span>
                     <button
@@ -99,7 +99,7 @@ export default function LoginPage() {
                   </div>
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    className="input input-bordered h-12 w-full border-base-300/70 bg-base-100/90 px-4"
+                    className="input input-bordered mt-3 h-12 w-full border-base-300/70 bg-base-100/90 px-4"
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
