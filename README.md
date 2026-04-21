@@ -71,3 +71,5 @@ La tabla `mantenimientos` ya guarda solo URLs en los campos `foto1Url`, `foto2Ur
 No se guardan blobs en la base de datos; el backend sube el archivo directo a Cloudinary y persiste únicamente la URL pública devuelta por el servicio.
 
 Para frontend, puedes desplegarlo en Vercel/Netlify o tambien en Railway como servicio estatico.
+
+Ultima actualizacion de despliegue: 2026-04-21.
