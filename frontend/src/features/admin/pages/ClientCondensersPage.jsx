@@ -22,6 +22,7 @@ export default function ClientCondensersPage() {
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
+  const [capturingGeo, setCapturingGeo] = useState(false)
 
   const fetchData = useCallback(async () => {
     try {
@@ -44,6 +45,10 @@ export default function ClientCondensersPage() {
 
   const handleSave = async (e) => {
     e.preventDefault()
+    if (!form.geolocalizacion) {
+      setFormError('Captura la geolocalización antes de guardar.')
+      return
+    }
     setSaving(true); setFormError('')
     try {
       if (modal === 'create') {
@@ -69,6 +74,29 @@ export default function ClientCondensersPage() {
     finally { setSaving(false) }
   }
 
+  const handleCaptureGeo = () => {
+    if (!navigator.geolocation) {
+      setFormError('Tu navegador no soporta geolocalización.')
+      return
+    }
+
+    setCapturingGeo(true)
+    setFormError('')
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const geo = `${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`
+        setForm(prev => ({ ...prev, geolocalizacion: geo }))
+        setCapturingGeo(false)
+      },
+      (err) => {
+        setFormError('No se pudo capturar la ubicación: ' + (err.message || err.code))
+        setCapturingGeo(false)
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    )
+  }
+
   const columns = [
     { key: 'numeroSerie', header: 'Serie' },
     { key: 'marca', header: 'Marca' },
@@ -77,7 +105,7 @@ export default function ClientCondensersPage() {
     { key: 'geolocalizacion', header: 'Geolocalización' },
     {
       key: 'mantenimientos',
-      header: `Mantis. ${new Date().getFullYear()}`,
+      header: `Mantenimientos ${new Date().getFullYear()}`,
       className: 'w-44 whitespace-nowrap',
       render: row => {
         const count = row._count?.mantenimientos || 0
@@ -175,7 +203,12 @@ export default function ClientCondensersPage() {
                 </label>
                 <label className="form-control">
                   <span className="label-text mb-1">Geolocalización</span>
-                  <input className="input input-bordered" value={form.geolocalizacion} onChange={e => setForm(p => ({...p, geolocalizacion: e.target.value}))} placeholder="Azotea Bloque B" />
+                  <div className="flex gap-2">
+                    <input className="input input-bordered flex-1" value={form.geolocalizacion} readOnly placeholder="Captura GPS (lat,lng)" />
+                    <Button type="button" variant="outline" onClick={handleCaptureGeo} disabled={capturingGeo}>
+                      {capturingGeo ? 'Capturando...' : 'Capturar GPS'}
+                    </Button>
+                  </div>
                 </label>
               </div>
               {formError && <p className="text-sm text-error">{formError}</p>}

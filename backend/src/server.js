@@ -3,8 +3,10 @@ const cors = require('cors')
 const dotenv = require('dotenv')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const cloudinary = require('cloudinary').v2
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3')
 const multer = require('multer')
+const path = require('path')
+const crypto = require('crypto')
 const { PrismaClient, RolUsuario, EstadoAsignacion } = require('@prisma/client')
 
 dotenv.config()
@@ -14,10 +16,15 @@ const PORT = process.env.PORT || 4000
 const JWT_SECRET = process.env.JWT_SECRET || 'cooltrack_dev_secret'
 const prisma = new PrismaClient()
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+const R2_PUBLIC_URL = (process.env.R2_PUBLIC_URL || '').replace(/\/$/, '')
+const r2Client = new S3Client({
+  region: 'auto',
+  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+  },
+  forcePathStyle: true,
 })
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } })
@@ -123,33 +130,37 @@ app.get('/api/auth/me', requireAuth, async (req, res) => {
   }
 })
 
-// ─── Upload Cloudinary ────────────────────────────────────────────────────────
+// ─── Upload R2 ───────────────────────────────────────────────────────────────
 
 app.post('/api/upload', requireAuth, upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ message: 'No se recibió ningún archivo.' })
+  if (!req.file.mimetype.startsWith('image/')) {
+    return res.status(400).json({ message: 'Solo se permiten imágenes.' })
+  }
+
+  if (!process.env.R2_ACCOUNT_ID || !process.env.R2_ACCESS_KEY_ID || !process.env.R2_SECRET_ACCESS_KEY || !process.env.R2_BUCKET_NAME || !R2_PUBLIC_URL) {
+    return res.status(500).json({
+      message: 'Faltan variables de entorno de Cloudflare R2. Revisa R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME y R2_PUBLIC_URL.',
+    })
+  }
 
   try {
-    // Graceful fallback for testing without real Cloudinary credentials
-    if (process.env.CLOUDINARY_API_KEY === 'your_api_key' || !process.env.CLOUDINARY_API_KEY) {
-      console.warn('⚠️ Usando MOCK upload: Por favor configura Cloudinary en .env para fotos reales.')
-      // Devuelvo una imagen realista de equipo industrial de Unsplash
-      return res.json({ 
-        url: 'https://images.unsplash.com/photo-1581094288338-2314dddb7ecb?auto=format&fit=crop&q=80&w=800', 
-        publicId: 'mock_photo_' + Date.now() 
-      })
-    }
+    const extension = path.extname(req.file.originalname || '').toLowerCase()
+    const safeExtension = extension && extension.length <= 8 ? extension : ''
+    const objectKey = `cooltrack/mantenimientos/${crypto.randomUUID()}${safeExtension}`
 
-    const result = await new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream(
-        { folder: 'cooltrack/mantenimientos', resource_type: 'image' },
-        (error, result) => { if (error) reject(error); else resolve(result) }
-      )
-      stream.end(req.file.buffer)
-    })
-    return res.json({ url: result.secure_url, publicId: result.public_id })
+    await r2Client.send(new PutObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME,
+      Key: objectKey,
+      Body: req.file.buffer,
+      ContentType: req.file.mimetype,
+    }))
+
+    const publicUrl = `${R2_PUBLIC_URL}/${objectKey.split('/').map(encodeURIComponent).join('/')}`
+    return res.json({ url: publicUrl, objectKey })
   } catch (error) {
-    console.error('Cloudinary error:', error)
-    return res.status(500).json({ message: 'Error al subir imagen.' })
+    console.error('R2 upload error:', error)
+    return res.status(500).json({ message: 'Error al subir imagen a Cloudflare R2.' })
   }
 })
 
@@ -499,7 +510,7 @@ app.get('/api/mantenimientos/:id', requireAuth, async (req, res) => {
 })
 
 app.post('/api/mantenimientos', requireAuth, async (req, res) => {
-  const { idClima, idTecnico, idAsignacion, fechaMantenimiento, foto1Url, foto2Url, foto3Url, observaciones } = req.body
+  const { idClima, idTecnico, idAsignacion, fechaMantenimiento, foto1Url, foto2Url, foto3Url, foto1Geo, foto2Geo, foto3Geo, geolocalizacion, observaciones } = req.body
   if (!idClima || !fechaMantenimiento)
     return res.status(400).json({ message: 'idClima y fechaMantenimiento son obligatorios.' })
 
@@ -507,17 +518,28 @@ app.post('/api/mantenimientos', requireAuth, async (req, res) => {
   if (!tecnicoId) return res.status(400).json({ message: 'idTecnico es requerido.' })
 
   try {
+    const geoCapturada = geolocalizacion || foto1Geo || foto2Geo || foto3Geo || null
+
     const mantenimiento = await prisma.mantenimiento.create({
       data: {
         idClima, idTecnico: tecnicoId, idAsignacion: idAsignacion || null,
         fechaMantenimiento: new Date(fechaMantenimiento),
-        foto1Url, foto2Url, foto3Url, observaciones,
+        foto1Url, foto2Url, foto3Url,
+        foto1Geo: foto1Geo || null, foto2Geo: foto2Geo || null, foto3Geo: foto3Geo || null,
+        observaciones,
       },
       include: {
         clima: { include: { cliente: { select: { id: true, nombreOEmpresa: true } } } },
         tecnico: { select: usuarioSafeSelect },
       },
     })
+
+    if (geoCapturada) {
+      await prisma.climaIndustrial.update({
+        where: { id: idClima },
+        data: { geolocalizacion: geoCapturada },
+      })
+    }
 
     // Auto-update asignacion to EN_PROGRESO if it was PENDIENTE
     if (idAsignacion) {

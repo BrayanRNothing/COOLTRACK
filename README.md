@@ -28,6 +28,12 @@ Backend en backend/.env:
 
 PORT=4000
 DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DB_NAME?schema=public"
+JWT_SECRET="cambia_esto_en_produccion"
+R2_ACCOUNT_ID="tu_account_id_de_cloudflare"
+R2_ACCESS_KEY_ID="tu_access_key_id"
+R2_SECRET_ACCESS_KEY="tu_secret_access_key"
+R2_BUCKET_NAME="nombre_del_bucket"
+R2_PUBLIC_URL="https://tu-dominio-publico-o-bucket.r2.dev"
 
 ## Comandos
 
@@ -56,6 +62,37 @@ Nota: cuando me pases tu esquema, lo integro en backend/prisma/schema.prisma y d
 3. Agrega servicio para backend apuntando a carpeta backend.
 4. Define variable DATABASE_URL con la que provee Railway.
 5. Define variable PORT (Railway normalmente la inyecta; el backend ya la lee).
-6. Start Command sugerido: npm run start.
+6. Define JWT_SECRET.
+7. Define R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME y R2_PUBLIC_URL.
+8. Start Command sugerido: npm run start.
+
+### Bloque listo para Railway
+
+```env
+PORT=4000
+DATABASE_URL=postgresql://...
+JWT_SECRET=una_clave_larga_y_unica
+R2_ACCOUNT_ID=tu_account_id
+R2_ACCESS_KEY_ID=tu_access_key_id
+R2_SECRET_ACCESS_KEY=tu_secret_access_key
+R2_BUCKET_NAME=tu_bucket
+R2_PUBLIC_URL=https://pub-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.r2.dev
+```
+
+### URL pública de R2
+
+Usa una de estas formas:
+
+```text
+https://pub-<bucket-id>.r2.dev
+https://cdn.tudominio.com  (si conectas un dominio propio al bucket)
+```
+
+Si usas el dominio `r2.dev`, las imágenes se verán directo con la URL que devuelve el backend. Si conectas un dominio propio o subdominio, pon ese dominio en `R2_PUBLIC_URL`.
+
+## PostgreSQL y fotos
+
+La tabla `mantenimientos` ya guarda solo URLs en los campos `foto1Url`, `foto2Url` y `foto3Url`.
+No se guardan blobs en la base de datos; el backend sube el archivo directo a Cloudflare R2 y persiste únicamente la URL pública devuelta por el bucket.
 
 Para frontend, puedes desplegarlo en Vercel/Netlify o tambien en Railway como servicio estatico.

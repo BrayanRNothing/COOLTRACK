@@ -36,7 +36,7 @@ export default function AppShell({ children }) {
 
           {/* Navigation Links */}
           {currentUser && links.length > 0 && (
-            <nav className="flex items-center gap-1 flex-grow overflow-x-auto h-full scrollbar-none">
+            <nav className="flex items-center gap-1 flex-grow overflow-x-auto overflow-y-hidden h-full scrollbar-none">
               {links.map((item) => (
                 <NavLink
                   key={item.to}

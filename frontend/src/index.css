@@ -36,3 +36,12 @@ body {
 ::-webkit-scrollbar-thumb {
   @apply bg-base-300 rounded-full hover:bg-base-content/20 transition-colors;
 }
+
+/* Hide scrollbar when .scrollbar-none is used */
+.scrollbar-none {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
