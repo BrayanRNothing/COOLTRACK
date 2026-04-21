@@ -31,89 +31,83 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="relative min-h-[calc(100vh-8rem)] overflow-hidden bg-gradient-to-br from-base-200 via-base-100 to-info/10 px-4 py-8 sm:px-6 sm:py-12">
-      <div className="pointer-events-none absolute inset-0 opacity-50">
-        <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-primary/20 blur-3xl" />
-        <div className="absolute -right-20 bottom-8 h-56 w-56 rounded-full bg-info/20 blur-3xl" />
+    <main className="relative min-h-[calc(100vh-8rem)] overflow-hidden bg-gradient-to-b from-base-200/70 via-base-100 to-base-100 px-4 py-8 sm:px-6 sm:py-12">
+      <div className="pointer-events-none absolute inset-0 opacity-45">
+        <div className="absolute -top-20 -left-20 h-56 w-56 rounded-full bg-base-content/10 blur-3xl" />
+        <div className="absolute -right-16 bottom-10 h-52 w-52 rounded-full bg-info/10 blur-3xl" />
       </div>
 
-      <section className="relative mx-auto grid w-full max-w-5xl overflow-hidden rounded-3xl border border-base-300/60 bg-base-100/95 shadow-2xl lg:grid-cols-[1.05fr_1fr]">
-        <aside className="hidden border-r border-base-300/70 bg-base-200/40 p-8 lg:block">
-          <p className="badge badge-primary mb-5">COOLTRACK</p>
+      <section className="relative mx-auto grid w-full max-w-5xl overflow-hidden rounded-3xl border border-base-300/60 bg-base-100 shadow-2xl shadow-base-content/10 lg:grid-cols-[0.95fr_1.05fr]">
+        <aside className="hidden border-r border-base-300/70 bg-base-200/45 p-8 lg:flex lg:flex-col lg:justify-center">
+          <p className="badge badge-neutral mb-5 w-fit">COOLTRACK</p>
           <h1 className="text-3xl font-bold leading-tight">Bienvenido de nuevo</h1>
           <p className="mt-3 text-sm text-base-content/70">
             Inicia sesión para administrar clientes, asignaciones y mantenimientos desde un solo lugar.
           </p>
 
           <div className="mt-8 space-y-3">
-            <div className="rounded-xl border border-base-300/70 bg-base-100 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-primary">Panel Admin</p>
+            <div className="rounded-xl border border-base-300/70 bg-base-100/90 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-base-content/70">Panel Admin</p>
               <p className="mt-1 text-sm text-base-content/70">Gestiona técnicos, clientes y equipos.</p>
             </div>
-            <div className="rounded-xl border border-base-300/70 bg-base-100 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-info">Panel Técnico</p>
+            <div className="rounded-xl border border-base-300/70 bg-base-100/90 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-base-content/70">Panel Técnico</p>
               <p className="mt-1 text-sm text-base-content/70">Consulta tareas y registra mantenimientos.</p>
             </div>
           </div>
         </aside>
 
-        <div className="p-6 sm:p-8 lg:p-10">
-          <p className="badge badge-primary mb-4 lg:hidden">COOLTRACK</p>
+        <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-10">
+          <p className="badge badge-neutral mb-4 w-fit lg:hidden">COOLTRACK</p>
           <h2 className="text-2xl font-bold sm:text-3xl">Iniciar sesión</h2>
           <p className="mt-2 text-sm text-base-content/70">Accede con tu usuario y contraseña registrados.</p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-            <div className="relative overflow-hidden rounded-3xl border border-base-300/60 bg-base-100 shadow-xl shadow-base-300/20">
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-r from-primary/10 via-info/10 to-transparent" />
-
-              <div className="relative p-5 sm:p-6">
-                <div className="mb-5 flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-base-content/55">
-                      Acceso a la plataforma
-                    </p>
-                    <h3 className="mt-1 text-lg font-semibold text-base-content">Ingresa tus credenciales</h3>
-                  </div>
-                  <span className="badge badge-neutral badge-sm">Seguro</span>
+            <div className="rounded-2xl border border-base-300/60 bg-base-100 p-5 sm:p-6">
+              <div className="mb-5 flex items-center justify-between gap-3 border-b border-base-300/70 pb-4">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-base-content/50">Acceso a la plataforma</p>
+                  <h3 className="mt-1 text-lg font-semibold">Ingresa tus credenciales</h3>
                 </div>
+                <span className="badge badge-outline badge-sm">Seguro</span>
+              </div>
 
-                <div className="grid gap-4">
-                  <div className="rounded-2xl border border-base-300/60 bg-base-200/35 p-3.5 sm:p-4">
-                    <label className="mb-2 block text-sm font-semibold text-base-content/85">Usuario</label>
-                    <input
-                      type="text"
-                      className="input input-bordered h-12 w-full rounded-xl border-base-300/70 bg-base-100 px-4"
-                      placeholder="tu_usuario"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      required
-                      autoFocus
-                      autoComplete="username"
-                    />
-                  </div>
+              <div className="space-y-5">
+                <label className="form-control w-full">
+                  <span className="mb-2.5 text-sm font-semibold text-base-content/85">Usuario</span>
+                  <input
+                    type="text"
+                    className="input input-bordered h-12 w-full border-base-300 bg-base-100 px-4"
+                    placeholder="tu_usuario"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                    autoFocus
+                    autoComplete="username"
+                  />
+                </label>
 
-                  <div className="rounded-2xl border border-base-300/60 bg-base-200/35 p-3.5 sm:p-4">
-                    <div className="mb-2 flex items-center justify-between gap-2">
-                      <label className="text-sm font-semibold text-base-content/85">Contraseña</label>
-                      <button
-                        type="button"
-                        className="btn btn-ghost btn-xs h-7 min-h-7 px-2 text-primary"
-                        onClick={() => setShowPassword((prev) => !prev)}
-                      >
-                        {showPassword ? 'Ocultar' : 'Mostrar'}
-                      </button>
-                    </div>
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      className="input input-bordered h-12 w-full rounded-xl border-base-300/70 bg-base-100 px-4"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      autoComplete="current-password"
-                    />
+                <label className="form-control w-full">
+                  <div className="mb-2.5 flex items-center justify-between gap-2">
+                    <span className="text-sm font-semibold text-base-content/85">Contraseña</span>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-xs h-7 min-h-7 px-2 text-base-content/70 hover:text-base-content"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                    >
+                      {showPassword ? 'Ocultar' : 'Mostrar'}
+                    </button>
                   </div>
-                </div>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    className="input input-bordered h-12 w-full border-base-300 bg-base-100 px-4"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    autoComplete="current-password"
+                  />
+                </label>
               </div>
             </div>
 
@@ -127,7 +121,7 @@ export default function LoginPage() {
               </div>
             )}
 
-            <Button type="submit" className="w-full h-12 text-base font-semibold" disabled={loading}>
+            <Button type="submit" variant="neutral" className="w-full h-12 text-base font-semibold" disabled={loading}>
               {loading && <span className="loading loading-spinner loading-xs" aria-hidden="true" />}
               {loading ? 'Ingresando...' : 'Ingresar al sistema'}
             </Button>
