@@ -35,6 +35,34 @@ const usuarioSafeSelect = {
 const isValidRole = (rol) => Object.values(RolUsuario).includes(rol)
 const isValidEstado = (e) => Object.values(EstadoAsignacion).includes(e)
 
+const parseSpreadsheetDate = (value) => {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) return value
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    // Excel serial date (days since 1899-12-30)
+    const utcDays = Math.floor(value - 25569)
+    const utcValue = utcDays * 86400
+    const dateInfo = new Date(utcValue * 1000)
+    if (!Number.isNaN(dateInfo.getTime())) return dateInfo
+  }
+
+  if (typeof value !== 'string') return null
+  const raw = value.trim()
+  if (!raw) return null
+
+  const direct = new Date(raw)
+  if (!Number.isNaN(direct.getTime())) return direct
+
+  const slashMatch = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
+  if (slashMatch) {
+    const [, day, month, year] = slashMatch
+    const parsed = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`)
+    if (!Number.isNaN(parsed.getTime())) return parsed
+  }
+
+  return null
+}
+
 const handlePrismaError = (error, res, fallbackMessage) => {
   if (error?.code === 'P2002') return res.status(409).json({ message: 'Conflicto: valor único duplicado.' })
   if (error?.code === 'P2003') return res.status(400).json({ message: 'Relación inválida: revisa los IDs.' })
@@ -358,6 +386,78 @@ app.post('/api/climas', requireAuth, requireAdmin, async (req, res) => {
     })
     return res.status(201).json(clima)
   } catch (error) { return handlePrismaError(error, res, 'Error al crear clima.') }
+})
+
+app.post('/api/clientes/:clienteId/climas/bulk', requireAuth, requireAdmin, async (req, res) => {
+  const { rows } = req.body
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return res.status(400).json({ message: 'Debes enviar al menos una fila para importar.' })
+  }
+
+  if (rows.length > 1000) {
+    return res.status(400).json({ message: 'El límite de importación por archivo es de 1000 filas.' })
+  }
+
+  try {
+    const cliente = await prisma.cliente.findUnique({ where: { id: req.params.clienteId }, select: { id: true } })
+    if (!cliente) return res.status(404).json({ message: 'Cliente no encontrado.' })
+
+    const rejected = []
+    const accepted = []
+    const serialsInFile = new Set()
+
+    rows.forEach((row, index) => {
+      const rowNumber = index + 2 // + header row in spreadsheet
+      const numeroSerie = String(row?.numeroSerie || '').trim()
+      const marca = String(row?.marca || '').trim()
+      const modelo = String(row?.modelo || '').trim()
+      const geolocalizacion = row?.geolocalizacion ? String(row.geolocalizacion).trim() : null
+      const fechaAplicacionDate = parseSpreadsheetDate(row?.fechaAplicacion)
+
+      if (!numeroSerie || !marca || !modelo || !fechaAplicacionDate) {
+        rejected.push({
+          row: rowNumber,
+          reason: 'Faltan campos obligatorios (numeroSerie, marca, modelo, fechaAplicacion) o fecha inválida.',
+        })
+        return
+      }
+
+      const serialKey = numeroSerie.toLowerCase()
+      if (serialsInFile.has(serialKey)) {
+        rejected.push({ row: rowNumber, reason: `Número de serie duplicado en archivo: ${numeroSerie}.` })
+        return
+      }
+      serialsInFile.add(serialKey)
+
+      accepted.push({
+        numeroSerie,
+        marca,
+        modelo,
+        fechaAplicacion: fechaAplicacionDate,
+        geolocalizacion,
+        idCliente: req.params.clienteId,
+      })
+    })
+
+    if (accepted.length === 0) {
+      return res.status(400).json({ message: 'No se encontraron filas válidas para importar.', rejected })
+    }
+
+    const createResult = await prisma.climaIndustrial.createMany({
+      data: accepted,
+      skipDuplicates: true,
+    })
+
+    return res.status(201).json({
+      totalRows: rows.length,
+      validRows: accepted.length,
+      created: createResult.count,
+      duplicatesOrConflicts: accepted.length - createResult.count,
+      rejected,
+    })
+  } catch (error) {
+    return handlePrismaError(error, res, 'Error al importar condensadores.')
+  }
 })
 
 app.put('/api/climas/:id', requireAuth, requireAdmin, async (req, res) => {

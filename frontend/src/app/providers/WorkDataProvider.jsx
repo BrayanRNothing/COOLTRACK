@@ -21,6 +21,7 @@ export function WorkDataProvider({ children }) {
     getClima: climasService.getClima,
     getMantenimientosByClima: climasService.getMantenimientosByClima,
     createClima: climasService.createClima,
+    createClimasBulk: climasService.createClimasBulk,
     updateClima: climasService.updateClima,
     deleteClima: climasService.deleteClima,
 

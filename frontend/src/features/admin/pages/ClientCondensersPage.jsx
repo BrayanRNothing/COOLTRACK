@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import * as XLSX from 'xlsx'
 import DataTable from '../../../shared/ui/DataTable'
 import PageHeader from '../../../shared/ui/PageHeader'
 import Breadcrumbs from '../../../shared/ui/Breadcrumbs'
@@ -8,9 +9,66 @@ import { useWorkData } from '../../../app/providers/useWorkData'
 
 const emptyForm = { numeroSerie: '', marca: '', modelo: '', fechaAplicacion: '', geolocalizacion: '' }
 
+const normalizeHeader = (value) => String(value || '')
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase()
+  .replace(/[^a-z0-9]/g, '')
+
+const headerAliases = {
+  numeroSerie: ['numeroserie', 'serie', 'noserie', 'numerodeserie'],
+  marca: ['marca'],
+  modelo: ['modelo'],
+  fechaAplicacion: ['fechaaplicacion', 'fecha', 'fechaaplicacionservicio'],
+  geolocalizacion: ['geolocalizacion', 'ubicacion', 'gps', 'latlng'],
+}
+
+const pickByAliases = (normalizedRow, aliases) => {
+  for (const alias of aliases) {
+    if (Object.prototype.hasOwnProperty.call(normalizedRow, alias)) return normalizedRow[alias]
+  }
+  return ''
+}
+
+async function parseCondensersExcel(file) {
+  const buffer = await file.arrayBuffer()
+  const workbook = XLSX.read(buffer, { type: 'array' })
+  const firstSheetName = workbook.SheetNames[0]
+  if (!firstSheetName) throw new Error('El archivo Excel no contiene hojas para importar.')
+
+  const sheet = workbook.Sheets[firstSheetName]
+  const rawRows = XLSX.utils.sheet_to_json(sheet, { defval: '' })
+
+  const mappedRows = rawRows
+    .map((rawRow) => {
+      const normalizedRow = {}
+      for (const [key, value] of Object.entries(rawRow)) {
+        normalizedRow[normalizeHeader(key)] = value
+      }
+
+      const row = {
+        numeroSerie: String(pickByAliases(normalizedRow, headerAliases.numeroSerie) || '').trim(),
+        marca: String(pickByAliases(normalizedRow, headerAliases.marca) || '').trim(),
+        modelo: String(pickByAliases(normalizedRow, headerAliases.modelo) || '').trim(),
+        fechaAplicacion: pickByAliases(normalizedRow, headerAliases.fechaAplicacion),
+        geolocalizacion: String(pickByAliases(normalizedRow, headerAliases.geolocalizacion) || '').trim(),
+      }
+
+      const isEmpty = !row.numeroSerie && !row.marca && !row.modelo && !row.fechaAplicacion && !row.geolocalizacion
+      return isEmpty ? null : row
+    })
+    .filter(Boolean)
+
+  if (mappedRows.length === 0) {
+    throw new Error('No se encontraron filas válidas. Usa columnas: numeroSerie, marca, modelo, fechaAplicacion y geolocalizacion (opcional).')
+  }
+
+  return mappedRows
+}
+
 export default function ClientCondensersPage() {
   const { clientId } = useParams()
-  const { getCliente, getClimasByCliente, createClima, updateClima, deleteClima } = useWorkData()
+  const { getCliente, getClimasByCliente, createClima, createClimasBulk, updateClima, deleteClima } = useWorkData()
   const navigate = useNavigate()
 
   const [client, setClient] = useState(null)
@@ -23,6 +81,9 @@ export default function ClientCondensersPage() {
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
   const [capturingGeo, setCapturingGeo] = useState(false)
+  const [importFile, setImportFile] = useState(null)
+  const [importing, setImporting] = useState(false)
+  const [importSummary, setImportSummary] = useState(null)
 
   const fetchData = useCallback(async () => {
     try {
@@ -39,9 +100,10 @@ export default function ClientCondensersPage() {
   useEffect(() => { fetchData() }, [fetchData])
 
   const openCreate = () => { setForm(emptyForm); setFormError(''); setModal('create') }
+  const openImport = () => { setImportFile(null); setImportSummary(null); setFormError(''); setModal('import') }
   const openEdit = (c) => { setSelected(c); setForm({ numeroSerie: c.numeroSerie, marca: c.marca, modelo: c.modelo, fechaAplicacion: c.fechaAplicacion?.slice(0, 10) || '', geolocalizacion: c.geolocalizacion || '' }); setFormError(''); setModal('edit') }
   const openDelete = (c) => { setSelected(c); setFormError(''); setModal('delete') }
-  const closeModal = () => { setModal(null); setSelected(null) }
+  const closeModal = () => { setModal(null); setSelected(null); setFormError('') }
 
   const handleSave = async (e) => {
     e.preventDefault()
@@ -72,6 +134,29 @@ export default function ClientCondensersPage() {
       closeModal()
     } catch (e) { setFormError(e.message) } 
     finally { setSaving(false) }
+  }
+
+  const handleImport = async (e) => {
+    e.preventDefault()
+    if (!importFile) {
+      setFormError('Selecciona un archivo Excel antes de importar.')
+      return
+    }
+
+    setImporting(true)
+    setFormError('')
+    setImportSummary(null)
+
+    try {
+      const rows = await parseCondensersExcel(importFile)
+      const summary = await createClimasBulk(clientId, rows)
+      setImportSummary(summary)
+      await fetchData()
+    } catch (e) {
+      setFormError(e.message)
+    } finally {
+      setImporting(false)
+    }
   }
 
   const handleCaptureGeo = () => {
@@ -167,6 +252,7 @@ export default function ClientCondensersPage() {
         actions={
           <div className="flex gap-2">
             <Button size="sm" onClick={openCreate}>Agregar condensador</Button>
+            <Button size="sm" variant="outline" onClick={openImport}>Importar Excel</Button>
             <Link className="btn btn-sm btn-outline" to="/admin/clientes">Volver</Link>
           </div>
         }
@@ -213,6 +299,58 @@ export default function ClientCondensersPage() {
               </div>
               {formError && <p className="text-sm text-error">{formError}</p>}
               <div className="modal-action"><Button type="button" onClick={closeModal} variant="outline">Cancelar</Button><Button type="submit" disabled={saving}>{saving ? 'Guardando...' : 'Guardar'}</Button></div>
+            </form>
+          </div>
+        </dialog>
+      )}
+
+      {modal === 'import' && (
+        <dialog className="modal modal-open" onClick={closeModal}>
+          <div className="modal-box max-w-2xl" onClick={e => e.stopPropagation()}>
+            <h3 className="font-bold text-lg mb-2">Importar condensadores desde Excel</h3>
+            <p className="text-sm text-base-content/70 mb-4">
+              Sube un archivo .xlsx o .xls con columnas: <strong>numeroSerie</strong>, <strong>marca</strong>, <strong>modelo</strong>, <strong>fechaAplicacion</strong> y opcional <strong>geolocalizacion</strong>.
+            </p>
+
+            <form onSubmit={handleImport} className="grid gap-4">
+              <label className="form-control">
+                <span className="label-text mb-1">Archivo Excel</span>
+                <input
+                  type="file"
+                  accept=".xlsx,.xls"
+                  className="file-input file-input-bordered w-full"
+                  onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+                />
+              </label>
+
+              {formError && <p className="text-sm text-error">{formError}</p>}
+
+              {importSummary && (
+                <div className="rounded-xl border border-base-300 bg-base-200/40 p-3 text-sm">
+                  <p><strong>Total filas:</strong> {importSummary.totalRows}</p>
+                  <p><strong>Filas válidas:</strong> {importSummary.validRows}</p>
+                  <p><strong>Creadas:</strong> {importSummary.created}</p>
+                  <p><strong>Duplicadas/conflicto:</strong> {importSummary.duplicatesOrConflicts}</p>
+                  {Array.isArray(importSummary.rejected) && importSummary.rejected.length > 0 && (
+                    <div className="mt-2">
+                      <p className="font-semibold">Filas rechazadas:</p>
+                      <ul className="mt-1 list-disc pl-5">
+                        {importSummary.rejected.slice(0, 10).map((item, idx) => (
+                          <li key={`${item.row}-${idx}`}>Fila {item.row}: {item.reason}</li>
+                        ))}
+                      </ul>
+                      {importSummary.rejected.length > 10 && (
+                        <p className="mt-1 text-xs text-base-content/60">Mostrando 10 de {importSummary.rejected.length} filas rechazadas.</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="modal-action">
+                <Button type="button" onClick={closeModal} variant="outline">Cerrar</Button>
+                <Button type="submit" disabled={importing}>{importing ? 'Importando...' : 'Importar'}</Button>
+              </div>
             </form>
           </div>
         </dialog>
