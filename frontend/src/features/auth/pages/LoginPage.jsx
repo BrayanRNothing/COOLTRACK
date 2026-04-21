@@ -63,18 +63,20 @@ export default function LoginPage() {
           <p className="mt-2 text-sm text-base-content/70">Accede con tu usuario y contrasena registrados.</p>
 
           <form onSubmit={handleSubmit} className="mt-7 space-y-5">
-            <div className="rounded-2xl border border-base-300/60 bg-base-100/60 p-4 shadow-sm sm:p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-base-content/60">
-                Credenciales de acceso
-              </p>
-              <div className="mt-3 h-px w-full bg-base-300/80" />
+            <div className="rounded-2xl bg-base-200/35 p-4 ring-1 ring-inset ring-base-300/50 sm:p-6">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-base-content/60">
+                  Credenciales
+                </p>
+                <span className="badge badge-outline badge-sm">Acceso seguro</span>
+              </div>
 
-              <div className="mt-4 space-y-4">
+              <div className="space-y-3.5">
                 <label className="form-control w-full gap-1.5">
-                  <span className="label-text font-semibold">Usuario</span>
+                  <span className="label-text text-xs font-semibold uppercase tracking-[0.12em] text-base-content/65">Usuario</span>
                   <input
                     type="text"
-                    className="input input-bordered h-12 w-full bg-base-100"
+                    className="input input-bordered h-12 w-full border-base-300/70 bg-base-100/90"
                     placeholder="tu_usuario"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
@@ -85,11 +87,11 @@ export default function LoginPage() {
                 </label>
 
                 <label className="form-control w-full gap-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="label-text font-semibold">Contrasena</span>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="label-text text-xs font-semibold uppercase tracking-[0.12em] text-base-content/65">Contrasena</span>
                     <button
                       type="button"
-                      className="btn btn-ghost btn-xs h-7 min-h-7 px-2 text-primary"
+                      className="text-xs font-semibold text-primary underline-offset-2 hover:underline"
                       onClick={() => setShowPassword((prev) => !prev)}
                     >
                       {showPassword ? 'Ocultar' : 'Mostrar'}
@@ -97,7 +99,7 @@ export default function LoginPage() {
                   </div>
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    className="input input-bordered h-12 w-full bg-base-100"
+                    className="input input-bordered h-12 w-full border-base-300/70 bg-base-100/90"
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -118,7 +120,7 @@ export default function LoginPage() {
               </div>
             )}
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full h-12 text-base font-semibold" disabled={loading}>
               {loading && <span className="loading loading-spinner loading-xs" aria-hidden="true" />}
               {loading ? 'Ingresando...' : 'Ingresar al sistema'}
             </Button>
