@@ -59,8 +59,8 @@ export default function LoginPage() {
 
         <div className="p-6 sm:p-8 lg:p-10">
           <p className="badge badge-primary mb-4 lg:hidden">COOLTRACK</p>
-          <h2 className="text-2xl font-bold sm:text-3xl">Iniciar sesion</h2>
-          <p className="mt-2 text-sm text-base-content/70">Accede con tu usuario y contrasena registrados.</p>
+          <h2 className="text-2xl font-bold sm:text-3xl">Iniciar sesión</h2>
+          <p className="mt-2 text-sm text-base-content/70">Accede con tu usuario y contraseña registrados.</p>
 
           <form onSubmit={handleSubmit} className="mt-7 space-y-5">
             <div className="rounded-2xl bg-base-200/35 p-4 ring-1 ring-inset ring-base-300/50 sm:p-6">
@@ -71,12 +71,12 @@ export default function LoginPage() {
                 <span className="badge badge-outline badge-sm">Acceso seguro</span>
               </div>
 
-              <div className="space-y-3.5">
-                <label className="form-control w-full gap-1.5">
+              <div className="space-y-4.5">
+                <label className="form-control w-full gap-2.5">
                   <span className="label-text text-xs font-semibold uppercase tracking-[0.12em] text-base-content/65">Usuario</span>
                   <input
                     type="text"
-                    className="input input-bordered h-12 w-full border-base-300/70 bg-base-100/90"
+                    className="input input-bordered h-12 w-full border-base-300/70 bg-base-100/90 px-4"
                     placeholder="tu_usuario"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
@@ -86,9 +86,9 @@ export default function LoginPage() {
                   />
                 </label>
 
-                <label className="form-control w-full gap-1.5">
+                <label className="form-control w-full gap-2.5">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="label-text text-xs font-semibold uppercase tracking-[0.12em] text-base-content/65">Contrasena</span>
+                    <span className="label-text text-xs font-semibold uppercase tracking-[0.12em] text-base-content/65">Contraseña</span>
                     <button
                       type="button"
                       className="text-xs font-semibold text-primary underline-offset-2 hover:underline"
@@ -99,7 +99,7 @@ export default function LoginPage() {
                   </div>
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    className="input input-bordered h-12 w-full border-base-300/70 bg-base-100/90"
+                    className="input input-bordered h-12 w-full border-base-300/70 bg-base-100/90 px-4"
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
