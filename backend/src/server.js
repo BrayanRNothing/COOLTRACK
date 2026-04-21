@@ -510,6 +510,8 @@ app.post('/api/mantenimientos', requireAuth, async (req, res) => {
   const { idClima, idTecnico, idAsignacion, fechaMantenimiento, foto1Url, foto2Url, foto3Url, foto1Geo, foto2Geo, foto3Geo, geolocalizacion, observaciones } = req.body
   if (!idClima || !fechaMantenimiento)
     return res.status(400).json({ message: 'idClima y fechaMantenimiento son obligatorios.' })
+  if (!foto1Url || !foto2Url || !foto3Url)
+    return res.status(400).json({ message: 'Las 3 fotos de mantenimiento son obligatorias.' })
 
   const tecnicoId = req.user.rol === 'TECNICO_CONTRATISTA' ? req.user.id : idTecnico
   if (!tecnicoId) return res.status(400).json({ message: 'idTecnico es requerido.' })

@@ -219,8 +219,8 @@ export default function MaintenanceRegisterPage() {
     }
 
     const selectedFotos = fotos.filter(Boolean)
-    if (selectedFotos.length === 0) {
-      setFormError('Debe capturar al menos una foto como evidencia.')
+    if (selectedFotos.length !== 3) {
+      setFormError('Debes capturar las 3 fotos de evidencia para registrar el mantenimiento.')
       return
     }
 
