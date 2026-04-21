@@ -66,6 +66,15 @@ const requireAdmin = (req, res, next) => {
 
 // ─── Health ───────────────────────────────────────────────────────────────────
 
+app.get('/', (_req, res) => {
+  return res.json({
+    service: 'COOLTRACK API',
+    ok: true,
+    health: '/api/health',
+    timestamp: new Date().toISOString(),
+  })
+})
+
 app.get('/api/health', (_req, res) => res.json({ ok: true, timestamp: new Date().toISOString() }))
 
 // Bootstrap: create first admin if none exists (public, one-time use)
