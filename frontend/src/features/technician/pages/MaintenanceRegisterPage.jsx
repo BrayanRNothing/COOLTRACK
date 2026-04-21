@@ -4,6 +4,12 @@ import Button from '../../../shared/ui/Button'
 import Breadcrumbs from '../../../shared/ui/Breadcrumbs'
 import { useWorkData } from '../../../app/providers/useWorkData'
 
+function getLocalDateTimeInputValue() {
+  const now = new Date()
+  const timezoneOffset = now.getTimezoneOffset() * 60000
+  return new Date(now.getTime() - timezoneOffset).toISOString().slice(0, 16)
+}
+
 // ─── Camera Modal ─────────────────────────────────────────────────────────────
 
 function CameraModal({ slotIndex, onCapture, onClose }) {
@@ -151,7 +157,7 @@ export default function MaintenanceRegisterPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const [fechaMantenimiento, setFechaMantenimiento] = useState(new Date().toISOString().slice(0, 16))
+  const [fechaMantenimiento, setFechaMantenimiento] = useState(getLocalDateTimeInputValue())
   const [observaciones, setObservaciones] = useState('')
   const [fotos, setFotos] = useState([null, null, null])
   const [previews, setPreviews] = useState([null, null, null])

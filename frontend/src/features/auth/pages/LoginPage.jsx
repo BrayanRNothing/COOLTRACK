@@ -63,47 +63,50 @@ export default function LoginPage() {
           <p className="mt-2 text-sm text-base-content/70">Accede con tu usuario y contrasena registrados.</p>
 
           <form onSubmit={handleSubmit} className="mt-7 space-y-5">
-            <fieldset className="space-y-4 rounded-2xl border border-base-300/70 bg-base-200/30 p-4 sm:p-5">
-              <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-base-content/60">
+            <div className="rounded-2xl border border-base-300/60 bg-base-100/60 p-4 shadow-sm sm:p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-base-content/60">
                 Credenciales de acceso
-              </legend>
+              </p>
+              <div className="mt-3 h-px w-full bg-base-300/80" />
 
-              <label className="form-control w-full">
-                <span className="label-text mb-1 font-medium">Usuario</span>
-                <input
-                  type="text"
-                  className="input input-bordered w-full"
-                  placeholder="tu_usuario"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
-                  autoFocus
-                  autoComplete="username"
-                />
-              </label>
+              <div className="mt-4 space-y-4">
+                <label className="form-control w-full gap-1.5">
+                  <span className="label-text font-semibold">Usuario</span>
+                  <input
+                    type="text"
+                    className="input input-bordered h-12 w-full bg-base-100"
+                    placeholder="tu_usuario"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                    autoFocus
+                    autoComplete="username"
+                  />
+                </label>
 
-              <label className="form-control w-full">
-                <div className="mb-1 flex items-center justify-between">
-                  <span className="label-text font-medium">Contrasena</span>
-                  <button
-                    type="button"
-                    className="text-xs font-medium text-primary hover:text-primary/80"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                  >
-                    {showPassword ? 'Ocultar' : 'Mostrar'}
-                  </button>
-                </div>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  className="input input-bordered w-full"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoComplete="current-password"
-                />
-              </label>
-            </fieldset>
+                <label className="form-control w-full gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="label-text font-semibold">Contrasena</span>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-xs h-7 min-h-7 px-2 text-primary"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                    >
+                      {showPassword ? 'Ocultar' : 'Mostrar'}
+                    </button>
+                  </div>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    className="input input-bordered h-12 w-full bg-base-100"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    autoComplete="current-password"
+                  />
+                </label>
+              </div>
+            </div>
 
             {error && (
               <div
