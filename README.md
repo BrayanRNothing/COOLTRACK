@@ -62,7 +62,8 @@ Nota: cuando me pases tu esquema, lo integro en backend/prisma/schema.prisma y d
 5. Define variable PORT (Railway normalmente la inyecta; el backend ya la lee).
 6. Define JWT_SECRET.
 7. Define CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY y CLOUDINARY_API_SECRET.
-8. Start Command sugerido: npm run start.
+8. Railway ejecutará `postinstall` y eso instalará las dependencias de `backend`.
+9. Start Command sugerido: npm run start.
 
 ## PostgreSQL y fotos
 
