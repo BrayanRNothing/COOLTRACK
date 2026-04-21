@@ -3,10 +3,8 @@ const cors = require('cors')
 const dotenv = require('dotenv')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3')
+const cloudinary = require('cloudinary').v2
 const multer = require('multer')
-const path = require('path')
-const crypto = require('crypto')
 const { PrismaClient, RolUsuario, EstadoAsignacion } = require('@prisma/client')
 
 dotenv.config()
@@ -16,15 +14,10 @@ const PORT = process.env.PORT || 4000
 const JWT_SECRET = process.env.JWT_SECRET || 'cooltrack_dev_secret'
 const prisma = new PrismaClient()
 
-const R2_PUBLIC_URL = (process.env.R2_PUBLIC_URL || '').replace(/\/$/, '')
-const r2Client = new S3Client({
-  region: 'auto',
-  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
-  },
-  forcePathStyle: true,
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 })
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } })
@@ -130,7 +123,7 @@ app.get('/api/auth/me', requireAuth, async (req, res) => {
   }
 })
 
-// ─── Upload R2 ───────────────────────────────────────────────────────────────
+// ─── Upload Cloudinary ────────────────────────────────────────────────────────
 
 app.post('/api/upload', requireAuth, upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ message: 'No se recibió ningún archivo.' })
@@ -138,29 +131,24 @@ app.post('/api/upload', requireAuth, upload.single('file'), async (req, res) => 
     return res.status(400).json({ message: 'Solo se permiten imágenes.' })
   }
 
-  if (!process.env.R2_ACCOUNT_ID || !process.env.R2_ACCESS_KEY_ID || !process.env.R2_SECRET_ACCESS_KEY || !process.env.R2_BUCKET_NAME || !R2_PUBLIC_URL) {
+  if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
     return res.status(500).json({
-      message: 'Faltan variables de entorno de Cloudflare R2. Revisa R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME y R2_PUBLIC_URL.',
+      message: 'Faltan variables de entorno de Cloudinary. Revisa CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY y CLOUDINARY_API_SECRET.',
     })
   }
 
   try {
-    const extension = path.extname(req.file.originalname || '').toLowerCase()
-    const safeExtension = extension && extension.length <= 8 ? extension : ''
-    const objectKey = `cooltrack/mantenimientos/${crypto.randomUUID()}${safeExtension}`
-
-    await r2Client.send(new PutObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME,
-      Key: objectKey,
-      Body: req.file.buffer,
-      ContentType: req.file.mimetype,
-    }))
-
-    const publicUrl = `${R2_PUBLIC_URL}/${objectKey.split('/').map(encodeURIComponent).join('/')}`
-    return res.json({ url: publicUrl, objectKey })
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: 'cooltrack/mantenimientos', resource_type: 'image' },
+        (error, uploaded) => { if (error) reject(error); else resolve(uploaded) }
+      )
+      stream.end(req.file.buffer)
+    })
+    return res.json({ url: result.secure_url, publicId: result.public_id })
   } catch (error) {
-    console.error('R2 upload error:', error)
-    return res.status(500).json({ message: 'Error al subir imagen a Cloudflare R2.' })
+    console.error('Cloudinary error:', error)
+    return res.status(500).json({ message: 'Error al subir imagen.' })
   }
 })
 
