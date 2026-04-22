@@ -40,28 +40,6 @@ export default function AppShell({ children }) {
               <p className="text-xl font-black tracking-tighter text-primary">COOLTRACK</p>
             </div>
 
-<<<<<<< HEAD
-          {/* Navigation Links */}
-          {currentUser && links.length > 0 && (
-            <nav className="flex items-center gap-1 flex-grow overflow-x-auto overflow-y-hidden h-full scrollbar-none">
-              {links.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className={({ isActive }) =>
-                    `h-full px-4 flex items-center text-xs uppercase tracking-widest font-bold transition-all border-b-2 relative top-[1px] ${
-                      isActive 
-                        ? 'border-primary text-primary bg-primary/5' 
-                        : 'border-transparent text-base-content/50 hover:text-base-content hover:bg-base-200/50'
-                    }`
-                  }
-                >
-                  {item.label}
-                </NavLink>
-              ))}
-            </nav>
-          )}
-=======
             {/* Desktop Nav */}
             {links.length > 0 && (
               <nav className="hidden md:flex items-center gap-1 h-full">
@@ -82,7 +60,6 @@ export default function AppShell({ children }) {
                 ))}
               </nav>
             )}
->>>>>>> b215569 (feat: optimizacion premium para dispositivos moviles y nueva navegacion inferior)
 
             {/* User Info & Logout */}
             <div className="flex items-center gap-4 flex-shrink-0">

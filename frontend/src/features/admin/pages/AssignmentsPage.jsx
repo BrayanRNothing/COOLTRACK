@@ -62,20 +62,9 @@ export default function AssignmentsPage() {
     { key: 'cliente', header: 'Cliente', render: (row) => row.cliente?.nombreOEmpresa || '-' },
     { key: 'tecnico', header: 'Técnico', render: (row) => row.tecnico ? `${row.tecnico.nombres} ${row.tecnico.apellidoPaterno}` : '-' },
     { key: 'fechaProgramada', header: 'Fecha', render: (row) => row.fechaProgramada?.slice(0, 10) || '-' },
-<<<<<<< HEAD
-    { key: 'notas', header: 'Notas', render: (row) => {
-        let displayNotas = row.notas;
-        try {
-          if (row.notas && row.notas.trim().startsWith('{')) {
-            displayNotas = JSON.parse(row.notas).instrucciones;
-          }
-        } catch(e){}
-        return <div className="max-w-xs truncate text-sm">{displayNotas || <span className="text-base-content/40 italic">Sin notas</span>}</div>
-      } },
-=======
-    { 
-      key: 'notas', 
-      header: 'Notas', 
+    {
+      key: 'notas',
+      header: 'Notas',
       render: (row) => {
         let text = row.notas
         try {
@@ -89,9 +78,8 @@ export default function AssignmentsPage() {
             {text || <span className="text-base-content/40 italic">Sin notas específicas</span>}
           </div>
         )
-      } 
+      },
     },
->>>>>>> b215569 (feat: optimizacion premium para dispositivos moviles y nueva navegacion inferior)
     { key: 'estado', header: 'Estado', render: (row) => <span className={`badge badge-sm ${estadoBadge[row.estado] || 'badge-ghost'}`}>{row.estado}</span> },
     { key: 'mantenimientos', header: 'Mantenimientos', className: 'w-24', render: (row) => row._count?.mantenimientos ?? 0 },
     {
