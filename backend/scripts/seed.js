@@ -8,7 +8,12 @@ async function main() {
 
   const passwordHash = await bcrypt.hash('123456', 10)
 
-  // Clean up just in case (though we did a force-reset)
+  // Clean up in correct order to avoid foreign key violations
+  console.log('🧹 Cleaning up old data...')
+  await prisma.mantenimiento.deleteMany({})
+  await prisma.asignacion.deleteMany({})
+  await prisma.climaIndustrial.deleteMany({})
+  await prisma.cliente.deleteMany({})
   await prisma.usuario.deleteMany({})
 
   // Create Admin

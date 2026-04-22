@@ -12,20 +12,42 @@ import { useWorkData } from '../../app/providers/useWorkData'
  *  - onClose        : () => void
  *  - onSuccess      : () => void
  */
-export default function AssignTechnicianModal({ clientId, clientNombre, preselectedIds = [], onClose, onSuccess }) {
-  const { getClimasByCliente, getTecnicos, createAsignacion } = useWorkData()
+/**
+ * AssignTechnicianModal
+ *
+ * Props:
+ *  - clientId       : string — ID del cliente
+ *  - clientNombre   : string — nombre del cliente para mostrar
+ *  - preselectedIds : string[] — IDs de condensadores preseleccionados (ej: desde CondenserProfilePage)
+ *  - editingAsignacion : object — Objeto de asignación existente si estamos editando
+ *  - onClose        : () => void
+ *  - onSuccess      : () => void
+ */
+export default function AssignTechnicianModal({ 
+  clientId, 
+  clientNombre, 
+  preselectedIds = [], 
+  editingAsignacion = null, 
+  onClose, 
+  onSuccess 
+}) {
+  const { getClimasByCliente, getTecnicos, createAsignacion, updateAsignacion } = useWorkData()
 
   const [tecnicos, setTecnicos] = useState([])
   const [climas, setClimas] = useState([])
   const [loadingData, setLoadingData] = useState(true)
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
+  
+  // Initialize form state
   const [idTecnico, setIdTecnico] = useState('')
-  const [fechaProgramada, setFechaProgramada] = useState(new Date().toISOString().slice(0, 10))
+  const [fechaProgramada, setFechaProgramada] = useState('')
   const [instrucciones, setInstrucciones] = useState('')
-  const [selectedIds, setSelectedIds] = useState(new Set(preselectedIds))
+  const [selectedIds, setSelectedIds] = useState(new Set())
+  
   const [showSuccess, setShowSuccess] = useState(false)
 
+  // Initialization logic
   useEffect(() => {
     let active = true
     const load = async () => {
@@ -36,13 +58,33 @@ export default function AssignTechnicianModal({ clientId, clientNombre, preselec
         setTecnicos(t)
         setClimas(c)
         
-        // Only set initial technician if not already set
-        setIdTecnico(current => current || (t.length > 0 ? t[0].id : ''))
-
-        // If no preselection, default to all (only on first load)
-        if (preselectedIds.length === 0) {
-          setSelectedIds(prev => prev.size === 0 ? new Set(c.map(cl => cl.id)) : prev)
+        if (editingAsignacion) {
+          // EDIT MODE: Load existing data
+          setIdTecnico(editingAsignacion.idTecnico)
+          setFechaProgramada(editingAsignacion.fechaProgramada?.slice(0, 10) || '')
+          
+          try {
+            const parsed = JSON.parse(editingAsignacion.notas || '{}')
+            setInstrucciones(parsed.instrucciones || '')
+            const ids = (parsed.condensadoresSeleccionados || []).map(item => item.id)
+            setSelectedIds(new Set(ids))
+          } catch (e) {
+            console.error('Error parsing notas:', e)
+            setInstrucciones(editingAsignacion.notas || '')
+            setSelectedIds(new Set())
+          }
+        } else {
+          // NEW MODE: Default values
+          setIdTecnico(t.length > 0 ? t[0].id : '')
+          setFechaProgramada(new Date().toISOString().slice(0, 10))
+          
+          if (preselectedIds.length > 0) {
+            setSelectedIds(new Set(preselectedIds))
+          } else {
+            setSelectedIds(new Set(c.map(cl => cl.id)))
+          }
         }
+
       } catch (e) {
         if (active) setFormError(e.message)
       } finally {
@@ -51,7 +93,7 @@ export default function AssignTechnicianModal({ clientId, clientNombre, preselec
     }
     load()
     return () => { active = false }
-  }, [clientId, getTecnicos, getClimasByCliente]) // Removed preselectedIds from deps
+  }, [clientId, getTecnicos, getClimasByCliente, editingAsignacion])
 
   const toggleClima = (id) => {
     setSelectedIds(prev => {
@@ -79,7 +121,6 @@ export default function AssignTechnicianModal({ clientId, clientNombre, preselec
     setSaving(true)
     setFormError('')
     try {
-      // Build the structured notas payload
       const condensadoresSeleccionados = climas
         .filter(c => selectedIds.has(c.id))
         .map(c => ({
@@ -88,18 +129,23 @@ export default function AssignTechnicianModal({ clientId, clientNombre, preselec
           mantenimientosCount: c._count?.mantenimientos ?? 0,
         }))
 
-      // Encode as JSON in notas field: { instrucciones, condensadoresSeleccionados }
       const notasPayload = JSON.stringify({
         instrucciones: instrucciones.trim() || null,
         condensadoresSeleccionados,
       })
 
-      await createAsignacion({
+      const payload = {
         idCliente: clientId,
         idTecnico,
         fechaProgramada,
         notas: notasPayload,
-      })
+      }
+
+      if (editingAsignacion) {
+        await updateAsignacion(editingAsignacion.id, payload)
+      } else {
+        await createAsignacion(payload)
+      }
       
       setShowSuccess(true)
       setTimeout(() => {
@@ -114,6 +160,8 @@ export default function AssignTechnicianModal({ clientId, clientNombre, preselec
 
   const allSelected = climas.length > 0 && selectedIds.size === climas.length
   const someSelected = selectedIds.size > 0 && selectedIds.size < climas.length
+
+  const isEditing = !!editingAsignacion
 
   return (
     <dialog className="modal modal-open" onClick={onClose}>
@@ -151,20 +199,13 @@ export default function AssignTechnicianModal({ clientId, clientNombre, preselec
                 strokeLinecap="round" 
                 strokeLinejoin="round"
               >
-                <circle 
-                  className="opacity-20" 
-                  cx="32" cy="32" r="30" 
-                  stroke="currentColor"
-                />
-                <path 
-                  className="animate-draw" 
-                  d="M18 32.5L27.5 42L46 22" 
-                />
+                <circle className="opacity-20" cx="32" cy="32" r="30" stroke="currentColor" />
+                <path className="animate-draw" d="M18 32.5L27.5 42L46 22" />
               </svg>
             </div>
-            <h3 className="text-2xl font-black text-center mb-2">¡Asignación Exitosa!</h3>
+            <h3 className="text-2xl font-black text-center mb-2">{isEditing ? '¡Actualización Exitosa!' : '¡Asignación Exitosa!'}</h3>
             <p className="text-base-content/60 text-center font-medium max-w-xs leading-relaxed">
-              El técnico ha sido notificado y la orden se ha creado correctamente.
+              El técnico verá los cambios en su aplicación de inmediato.
             </p>
             <div className="mt-8 flex gap-1">
               {[1, 2, 3].map(i => (
@@ -177,9 +218,11 @@ export default function AssignTechnicianModal({ clientId, clientNombre, preselec
         {/* Header */}
         <div className="bg-base-200/50 px-6 py-5 border-b border-base-300">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-primary text-primary-content flex items-center justify-center text-xl shadow-lg shadow-primary/20">🔧</div>
+            <div className={`h-10 w-10 rounded-xl ${isEditing ? 'bg-secondary' : 'bg-primary'} text-white flex items-center justify-center text-xl shadow-lg`}>
+              {isEditing ? '📝' : '🔧'}
+            </div>
             <div>
-              <h3 className="font-black text-lg leading-tight">Enviar Técnico</h3>
+              <h3 className="font-black text-lg leading-tight">{isEditing ? 'Gestionar Asignación Activa' : 'Nueva Asignación'}</h3>
               <p className="text-[10px] font-bold uppercase tracking-wider opacity-40 mt-0.5">{clientNombre}</p>
             </div>
             <button 
@@ -200,10 +243,9 @@ export default function AssignTechnicianModal({ clientId, clientNombre, preselec
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Primary Fields Grid */}
               <div className="grid grid-cols-2 gap-4">
                 <label className="form-control w-full">
-                  <span className="text-[10px] font-bold uppercase opacity-40 mb-2 ml-1">Asignar a Técnico *</span>
+                  <span className="text-[10px] font-bold uppercase opacity-40 mb-2 ml-1">Técnico Responsable *</span>
                   <select
                     className="select select-bordered w-full bg-base-200 focus:bg-base-100 transition-all font-semibold"
                     value={idTecnico}
@@ -211,7 +253,7 @@ export default function AssignTechnicianModal({ clientId, clientNombre, preselec
                     required
                   >
                     {tecnicos.map(t => (
-                      <option key={t.id} value={t.id} className="text-base-content bg-base-100">{t.nombres} {t.apellidoPaterno}</option>
+                      <option key={t.id} value={t.id}>{t.nombres} {t.apellidoPaterno}</option>
                     ))}
                   </select>
                 </label>
@@ -228,101 +270,59 @@ export default function AssignTechnicianModal({ clientId, clientNombre, preselec
                 </label>
               </div>
 
-              {/* Condensadores Selection */}
               <section className="space-y-3">
                 <div className="flex items-center justify-between px-1">
-                  <span className="text-[10px] font-bold uppercase opacity-40">Condensadores Seleccionados</span>
+                  <span className="text-[10px] font-bold uppercase opacity-40">Equipos a Mantenimiento</span>
                   <div className="flex items-center gap-3">
                     <span className="badge badge-primary badge-sm font-bold">{selectedIds.size} de {climas.length}</span>
-                    {climas.length > 1 && (
-                      <button
-                        type="button"
-                        className="text-[10px] font-bold uppercase text-primary hover:underline"
-                        onClick={toggleAll}
-                      >
-                        {allSelected ? 'Ninguno' : 'Todos'}
-                      </button>
-                    )}
+                    <button type="button" className="text-[10px] font-bold uppercase text-primary hover:underline" onClick={toggleAll}>
+                      {allSelected ? 'Ninguno' : 'Todos'}
+                    </button>
                   </div>
                 </div>
 
-                {climas.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-base-300 p-8 text-center bg-base-200/50">
-                    <p className="text-sm text-base-content/40 italic font-medium">Este cliente no tiene condensadores registrados.</p>
-                  </div>
-                ) : (
-                  <div className="rounded-2xl border border-base-300 bg-base-100 overflow-hidden divide-y divide-base-200 max-h-48 overflow-y-auto custom-scrollbar shadow-inner">
-                    {climas.map(c => {
-                      const count = c._count?.mantenimientos ?? 0
-                      const isSelected = selectedIds.has(c.id)
-                      return (
-                        <label
-                          key={c.id}
-                          className={`flex items-center gap-4 px-4 py-3 cursor-pointer transition-all hover:bg-primary/5 select-none
-                            ${isSelected ? 'bg-primary/5' : ''}`}
-                        >
-                          <input
-                            type="checkbox"
-                            className="checkbox checkbox-primary checkbox-sm rounded-md"
-                            checked={isSelected}
-                            onChange={() => toggleClima(c.id)}
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p className="font-bold text-sm tracking-tight">{c.numeroSerie}</p>
-                            <p className="text-[10px] font-semibold opacity-50 truncate uppercase tracking-widest">{c.marca} · {c.modelo}</p>
-                          </div>
-                          
-                          <div className="flex items-center gap-1.5" title={`${count}/3 mantenimientos este año`}>
-                            {[1, 2, 3].map(i => (
-                              <div
-                                key={i}
-                                className={`h-1.5 w-4 rounded-full transition-all duration-300 ${
-                                  i <= count
-                                    ? (count >= 3 ? 'bg-success shadow-[0_0_8px_rgba(34,197,94,0.3)]' : 'bg-primary shadow-[0_0_8px_rgba(147,51,234,0.3)]')
-                                    : 'bg-base-300'
-                                }`}
-                              />
-                            ))}
-                          </div>
-                        </label>
-                      )
-                    })}
-                  </div>
-                )}
+                <div className="rounded-2xl border border-base-300 bg-base-100 overflow-hidden divide-y divide-base-200 max-h-48 overflow-y-auto custom-scrollbar shadow-inner">
+                  {climas.map(c => {
+                    const count = c._count?.mantenimientos ?? 0
+                    const isSelected = selectedIds.has(c.id)
+                    return (
+                      <label key={c.id} className={`flex items-center gap-4 px-4 py-3 cursor-pointer transition-all hover:bg-primary/5 select-none ${isSelected ? 'bg-primary/5' : ''}`}>
+                        <input type="checkbox" className="checkbox checkbox-primary checkbox-sm rounded-md" checked={isSelected} onChange={() => toggleClima(c.id)} />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-sm tracking-tight">{c.numeroSerie}</p>
+                          <p className="text-[10px] font-semibold opacity-50 truncate uppercase tracking-widest">{c.marca} · {c.modelo}</p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3].map(i => (
+                            <div key={i} className={`h-1.5 w-4 rounded-full ${i <= count ? (count >= 3 ? 'bg-success' : 'bg-primary') : 'bg-base-300'}`} />
+                          ))}
+                        </div>
+                      </label>
+                    )
+                  })}
+                </div>
               </section>
 
-              {/* Instructions */}
               <label className="form-control w-full">
-                <span className="text-[10px] font-bold uppercase opacity-40 mb-2 ml-1">Notas e Instrucciones Adicionales</span>
+                <span className="text-[10px] font-bold uppercase opacity-40 mb-2 ml-1">Notas e Instrucciones</span>
                 <textarea
-                  className="textarea textarea-bordered w-full min-h-24 bg-base-200 focus:bg-base-100 transition-all resize-none shadow-inner p-4 text-sm font-medium leading-relaxed"
-                  placeholder="Ej: Revisar presión de gas, limpieza de filtros..."
+                  className="textarea textarea-bordered w-full min-h-24 bg-base-200 focus:bg-base-100 transition-all resize-none shadow-inner p-4 text-sm font-medium"
+                  placeholder="Ej: Revisar presión de gas..."
                   value={instrucciones}
                   onChange={e => setInstrucciones(e.target.value)}
                 />
               </label>
 
               {formError && (
-                <div className="p-3 rounded-xl bg-error/10 border border-error/20 flex items-center gap-2 animate-shake">
-                  <span className="text-error">⚠️</span>
-                  <p className="text-xs font-bold text-error">{formError}</p>
+                <div className="p-3 rounded-xl bg-error/10 border border-error/20 flex items-center gap-2">
+                  <span className="text-error text-xs">⚠️ {formError}</span>
                 </div>
               )}
 
               <div className="flex items-center gap-3 pt-2">
-                <Button type="button" onClick={onClose} variant="outline" className="flex-1 border-none bg-base-200 hover:bg-base-300">
-                  Cancelar
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={saving || selectedIds.size === 0}
-                  className="flex-[2] shadow-lg shadow-primary/20"
-                >
-                  {saving ? (
-                    <span className="flex items-center gap-2"><span className="loading loading-spinner loading-xs"></span> Enviando...</span>
-                  ) : (
-                    `Asignar ${selectedIds.size} Equipo${selectedIds.size !== 1 ? 's' : ''}`
-                  )}
+                <Button type="button" onClick={onClose} variant="outline" className="flex-1">Cancelar</Button>
+                <Button type="submit" disabled={saving || selectedIds.size === 0} className="flex-[2] shadow-lg">
+                  {saving ? 'Guardando...' : (isEditing ? 'Actualizar Asignación' : 'Crear Asignación')}
                 </Button>
               </div>
             </form>

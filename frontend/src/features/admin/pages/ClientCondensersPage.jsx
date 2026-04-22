@@ -68,40 +68,104 @@ async function parseCondensersExcel(file) {
 
 export default function ClientCondensersPage() {
   const { clientId } = useParams()
-  const { getCliente, getClimasByCliente, createClima, createClimasBulk, updateClima, deleteClima } = useWorkData()
+  const { getCliente, getClimasByCliente, getAsignaciones, createClima, createClimasBulk, updateClima, deleteClima } = useWorkData()
   const navigate = useNavigate()
 
   const [client, setClient] = useState(null)
   const [climas, setClimas] = useState([])
+  const [activeAssignments, setActiveAssignments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [modal, setModal] = useState(null)
   const [selected, setSelected] = useState(null)
+  
+  // Persistence for last used Marca and Modelo
+  const [lastMarca, setLastMarca] = useState('')
+  const [lastModelo, setLastModelo] = useState('')
+  
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
-  const [capturingGeo, setCapturingGeo] = useState(false)
+  const [gettingLocation, setGettingLocation] = useState(false)
+
+  // Import related state
   const [importFile, setImportFile] = useState(null)
   const [importing, setImporting] = useState(false)
   const [importSummary, setImportSummary] = useState(null)
 
   const fetchData = useCallback(async () => {
     try {
-      const [c, cls] = await Promise.all([getCliente(clientId), getClimasByCliente(clientId)])
+      const [c, cls, as] = await Promise.all([
+        getCliente(clientId), 
+        getClimasByCliente(clientId),
+        getAsignaciones()
+      ])
       setClient(c)
       setClimas(cls)
+      // Filter for active ones related to the client
+      setActiveAssignments(as.filter(a => a.idCliente === clientId && (a.estado === 'PENDIENTE' || a.estado === 'EN_PROGRESO')))
     } catch (e) {
       setError(e.message)
     } finally {
       setLoading(false)
     }
-  }, [clientId, getCliente, getClimasByCliente])
+  }, [clientId, getCliente, getClimasByCliente, getAsignaciones])
 
   useEffect(() => { fetchData() }, [fetchData])
 
-  const openCreate = () => { setForm(emptyForm); setFormError(''); setModal('create') }
-  const openImport = () => { setImportFile(null); setImportSummary(null); setFormError(''); setModal('import') }
-  const openEdit = (c) => { setSelected(c); setForm({ numeroSerie: c.numeroSerie, marca: c.marca, modelo: c.modelo, fechaAplicacion: c.fechaAplicacion?.slice(0, 10) || '', geolocalizacion: c.geolocalizacion || '' }); setFormError(''); setModal('edit') }
+  const getGeoLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      console.warn('Geolocation not supported')
+      return
+    }
+    setGettingLocation(true)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords
+        setForm(p => ({ ...p, geolocalizacion: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}` }))
+        setGettingLocation(false)
+      },
+      (err) => {
+        console.error('Error getting location:', err)
+        setGettingLocation(false)
+      },
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+    )
+  }, [])
+
+  const openCreate = () => { 
+    const today = new Date().toISOString().split('T')[0]
+    setForm({ 
+      ...emptyForm, 
+      marca: lastMarca, 
+      modelo: lastModelo,
+      fechaAplicacion: today
+    })
+    setFormError('')
+    setModal('create')
+    getGeoLocation()
+  }
+
+  const openImport = () => { 
+    setImportFile(null)
+    setImportSummary(null)
+    setFormError('')
+    setModal('import') 
+  }
+  
+  const openEdit = (c) => { 
+    setSelected(c)
+    setForm({ 
+      numeroSerie: c.numeroSerie, 
+      marca: c.marca, 
+      modelo: c.modelo, 
+      fechaAplicacion: c.fechaAplicacion?.slice(0, 10) || '', 
+      geolocalizacion: c.geolocalizacion || '' 
+    })
+    setFormError('')
+    setModal('edit')
+  }
+
   const openDelete = (c) => { setSelected(c); setFormError(''); setModal('delete') }
   const closeModal = () => { setModal(null); setSelected(null); setFormError('') }
 
@@ -117,6 +181,9 @@ export default function ClientCondensersPage() {
         const newClima = await createClima({ ...form, idCliente: clientId })
         setClimas(prev => [newClima, ...prev])
         setClient(prev => prev ? { ...prev, _count: { climas: (prev._count?.climas || 0) + 1 } } : prev)
+        
+        setLastMarca(form.marca)
+        setLastModelo(form.modelo)
       } else {
         const updated = await updateClima(selected.id, form)
         setClimas(prev => prev.map(c => c.id === updated.id ? updated : c))
@@ -142,11 +209,9 @@ export default function ClientCondensersPage() {
       setFormError('Selecciona un archivo Excel antes de importar.')
       return
     }
-
     setImporting(true)
     setFormError('')
     setImportSummary(null)
-
     try {
       const rows = await parseCondensersExcel(importFile)
       const summary = await createClimasBulk(clientId, rows)
@@ -159,31 +224,20 @@ export default function ClientCondensersPage() {
     }
   }
 
-  const handleCaptureGeo = () => {
-    if (!navigator.geolocation) {
-      setFormError('Tu navegador no soporta geolocalización.')
-      return
-    }
-
-    setCapturingGeo(true)
-    setFormError('')
-
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const geo = `${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`
-        setForm(prev => ({ ...prev, geolocalizacion: geo }))
-        setCapturingGeo(false)
-      },
-      (err) => {
-        setFormError('No se pudo capturar la ubicación: ' + (err.message || err.code))
-        setCapturingGeo(false)
-      },
-      { timeout: 10000, enableHighAccuracy: true }
-    )
-  }
-
   const columns = [
-    { key: 'numeroSerie', header: 'Serie' },
+    { key: 'numeroSerie', header: 'Serie', render: row => (
+      <div className="flex items-center gap-2">
+        <span>{row.numeroSerie}</span>
+        {activeAssignments.some(a => {
+          try {
+            const parsed = JSON.parse(a.notas || '{}')
+            return (parsed.condensadoresSeleccionados || []).some(item => item.id === row.id)
+          } catch(e) { return false }
+        }) && (
+          <span className="badge badge-warning badge-xs font-bold animate-pulse text-[8px]">MANT.</span>
+        )}
+      </div>
+    )},
     { key: 'marca', header: 'Marca' },
     { key: 'modelo', header: 'Modelo' },
     { key: 'fechaAplicacion', header: 'Aplicación', render: row => row.fechaAplicacion?.slice(0, 10) || '-' },
@@ -288,17 +342,30 @@ export default function ClientCondensersPage() {
                   <input type="date" className="input input-bordered" value={form.fechaAplicacion} onChange={e => setForm(p => ({...p, fechaAplicacion: e.target.value}))} required />
                 </label>
                 <label className="form-control">
-                  <span className="label-text mb-1">Geolocalización</span>
-                  <div className="flex gap-2">
-                    <input className="input input-bordered flex-1" value={form.geolocalizacion} readOnly placeholder="Captura GPS (lat,lng)" />
-                    <Button type="button" variant="outline" onClick={handleCaptureGeo} disabled={capturingGeo}>
-                      {capturingGeo ? 'Capturando...' : 'Capturar GPS'}
-                    </Button>
-                  </div>
+                  <span className="label-text mb-1 flex justify-between items-center">
+                    Geolocalización
+                    <button 
+                      type="button" 
+                      onClick={getGeoLocation} 
+                      className="btn btn-xs btn-ghost text-primary gap-1 lowercase"
+                      disabled={gettingLocation}
+                    >
+                      {gettingLocation ? <span className="loading loading-spinner loading-xs" /> : (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                      )}
+                      {gettingLocation ? 'obteniendo...' : 'actualizar'}
+                    </button>
+                  </span>
+                  <input 
+                    className={`input input-bordered ${gettingLocation ? 'opacity-50' : ''}`} 
+                    value={form.geolocalizacion} 
+                    onChange={e => setForm(p => ({...p, geolocalizacion: e.target.value}))} 
+                    placeholder="Lat, Lng o descripción" 
+                  />
                 </label>
               </div>
               {formError && <p className="text-sm text-error">{formError}</p>}
-              <div className="modal-action"><Button type="button" onClick={closeModal} variant="outline">Cancelar</Button><Button type="submit" disabled={saving}>{saving ? 'Guardando...' : 'Guardar'}</Button></div>
+              <div className="modal-action"><Button type="button" onClick={closeModal} variant="outline">Cancelar</Button><Button type="submit" disabled={saving || gettingLocation}>{saving ? 'Guardando...' : 'Guardar'}</Button></div>
             </form>
           </div>
         </dialog>
@@ -311,7 +378,6 @@ export default function ClientCondensersPage() {
             <p className="text-sm text-base-content/70 mb-4">
               Sube un archivo .xlsx o .xls con columnas: <strong>numeroSerie</strong>, <strong>marca</strong>, <strong>modelo</strong>, <strong>fechaAplicacion</strong> y opcional <strong>geolocalizacion</strong>.
             </p>
-
             <form onSubmit={handleImport} className="grid gap-4">
               <label className="form-control">
                 <span className="label-text mb-1">Archivo Excel</span>
@@ -322,9 +388,7 @@ export default function ClientCondensersPage() {
                   onChange={(e) => setImportFile(e.target.files?.[0] || null)}
                 />
               </label>
-
               {formError && <p className="text-sm text-error">{formError}</p>}
-
               {importSummary && (
                 <div className="rounded-xl border border-base-300 bg-base-200/40 p-3 text-sm">
                   <p><strong>Total filas:</strong> {importSummary.totalRows}</p>
@@ -339,14 +403,10 @@ export default function ClientCondensersPage() {
                           <li key={`${item.row}-${idx}`}>Fila {item.row}: {item.reason}</li>
                         ))}
                       </ul>
-                      {importSummary.rejected.length > 10 && (
-                        <p className="mt-1 text-xs text-base-content/60">Mostrando 10 de {importSummary.rejected.length} filas rechazadas.</p>
-                      )}
                     </div>
                   )}
                 </div>
               )}
-
               <div className="modal-action">
                 <Button type="button" onClick={closeModal} variant="outline">Cerrar</Button>
                 <Button type="submit" disabled={importing}>{importing ? 'Importando...' : 'Importar'}</Button>

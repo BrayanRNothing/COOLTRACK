@@ -33,26 +33,49 @@ export default function TechnicianHistoryPage() {
           Aún no has registrado ningun mantenimiento.
         </div>
       ) : (
-        <div className="grid gap-3">
+        <div className="grid gap-4">
           {records.map(record => {
             const fotos = [record.foto1Url, record.foto2Url, record.foto3Url].filter(Boolean)
             return (
-              <article key={record.id} className="rounded-xl border border-base-300 bg-base-100 p-4 flex items-start gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold">{record.clima?.cliente?.nombreOEmpresa}</span>
-                    <span className="badge badge-sm badge-ghost">{record.clima?.numeroSerie}</span>
+              <article key={record.id} className="group card bg-base-100 border border-base-300 shadow-sm hover:shadow-md transition-all overflow-hidden">
+                <div className="p-5">
+                  <div className="flex justify-between items-start gap-4 mb-3">
+                    <div className="min-w-0">
+                      <h3 className="font-black text-base leading-tight truncate">{record.clima?.cliente?.nombreOEmpresa}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="badge badge-primary badge-xs font-bold tracking-tighter">{record.clima?.numeroSerie}</span>
+                        <span className="text-[10px] font-bold opacity-40 uppercase">{record.clima?.marca} · {record.clima?.modelo}</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end flex-shrink-0">
+                      <span className="text-[10px] font-black opacity-40 uppercase">Realizado</span>
+                      <span className="text-xs font-bold">{record.fechaMantenimiento?.slice(0, 10)}</span>
+                    </div>
                   </div>
-                  <p className="text-sm text-base-content/60 mt-1">
-                    {record.clima?.marca} {record.clima?.modelo} · {record.fechaMantenimiento?.slice(0, 10)}
-                  </p>
-                  {record.observaciones && <p className="text-sm mt-2 text-base-content/80">{record.observaciones}</p>}
+
+                  {record.observaciones && (
+                    <div className="bg-base-200/50 rounded-xl p-3 mb-4">
+                      <p className="text-sm text-base-content/70 italic leading-relaxed">
+                        "{record.observaciones}"
+                      </p>
+                    </div>
+                  )}
+
+                  {fotos.length > 0 && (
+                    <div className="flex items-center justify-between pt-3 border-t border-base-200">
+                      <div className="flex -space-x-2">
+                        {fotos.map((url, i) => (
+                          <div key={i} className="w-8 h-8 rounded-lg border-2 border-base-100 overflow-hidden bg-base-200">
+                            <img src={url} className="w-full h-full object-cover" alt="miniatura" />
+                          </div>
+                        ))}
+                      </div>
+                      <Button size="sm" variant="ghost" className="text-primary font-bold text-xs" onClick={() => setModalFotos(fotos)}>
+                        VER EVIDENCIA ({fotos.length})
+                      </Button>
+                    </div>
+                  )}
                 </div>
-                {fotos.length > 0 && (
-                  <Button size="sm" variant="outline" onClick={() => setModalFotos(fotos)}>
-                    Ver fotos ({fotos.length})
-                  </Button>
-                )}
               </article>
             )
           })}
@@ -60,16 +83,18 @@ export default function TechnicianHistoryPage() {
       )}
 
       {modalFotos && (
-        <dialog className="modal modal-open" onClick={() => setModalFotos(null)}>
-          <div className="modal-box max-w-2xl" onClick={e => e.stopPropagation()}>
-            <h3 className="font-bold text-lg mb-4">Fotos del Mantenimiento</h3>
-            <div className="grid gap-3">
+        <dialog className="modal modal-open bg-black/80 backdrop-blur-sm" onClick={() => setModalFotos(null)}>
+          <div className="modal-box p-0 bg-transparent shadow-none max-w-lg" onClick={e => e.stopPropagation()}>
+            <div className="flex flex-col gap-4">
               {modalFotos.map((url, i) => (
-                <img key={i} src={url} alt={`Foto ${i + 1}`} className="w-full rounded-xl object-cover max-h-80" />
+                <div key={i} className="relative group">
+                  <img src={url} alt={`Evidencia ${i + 1}`} className="w-full rounded-2xl shadow-2xl border border-white/10" />
+                  <span className="absolute top-4 left-4 badge badge-primary font-black text-[10px]">FOTO {i + 1}</span>
+                </div>
               ))}
-            </div>
-            <div className="modal-action mt-4">
-              <Button onClick={() => setModalFotos(null)}>Cerrar</Button>
+              <div className="flex justify-center pt-4">
+                <Button className="btn-circle btn-lg" onClick={() => setModalFotos(null)}>✕</Button>
+              </div>
             </div>
           </div>
         </dialog>

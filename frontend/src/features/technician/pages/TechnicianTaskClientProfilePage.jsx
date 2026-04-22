@@ -79,26 +79,28 @@ export default function TechnicianTaskClientProfilePage() {
   }
 
   return (
-    <section className="h-[calc(100vh-64px)] flex flex-col overflow-hidden">
+    <section className="min-h-screen sm:h-[calc(100vh-64px)] flex flex-col sm:overflow-hidden">
       {/* Sticky Top Bar */}
-      <div className="flex-none bg-base-100/80 backdrop-blur-md pt-4 pb-4 mb-6 border-b border-base-200 px-4 sm:px-6">
-        <div className="flex items-center justify-between">
-          <Breadcrumbs items={[
-            { label: 'Panel', to: '/tecnico/dashboard' },
-            { label: 'Detalle del Trabajo' }
-          ]} />
-          <div className="flex items-center gap-2">
-            {isCompleted && <span className="badge badge-success badge-sm font-bold px-3">TRABAJO COMPLETADO</span>}
-            <Link className="btn btn-xs btn-ghost opacity-50 hover:opacity-100" to="/tecnico/dashboard">← Volver</Link>
+      <div className="flex-none bg-base-100/80 backdrop-blur-md pt-4 pb-4 mb-4 border-b border-base-200 px-4 sm:px-6 sticky top-0 z-10">
+        <div className="flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <Breadcrumbs items={[
+              { label: 'Panel', to: '/tecnico/dashboard' },
+              { label: 'Detalle' }
+            ]} />
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {isCompleted && <span className="badge badge-success badge-xs sm:badge-sm font-bold px-2 sm:px-3">COMPLETADO</span>}
+            <Link className="btn btn-xs btn-ghost opacity-50" to="/tecnico/dashboard">← Volver</Link>
           </div>
         </div>
       </div>
 
-      {/* Main Content Area (Split Scroll) */}
-      <div className="flex-1 overflow-hidden px-4 sm:px-6">
+      {/* Main Content Area */}
+      <div className="flex-1 sm:overflow-hidden sm:px-6">
         <div className="grid lg:grid-cols-3 gap-6 h-full">
-          {/* Sidebar Info (Always Visible) */}
-          <div className="lg:col-span-1 space-y-4 overflow-y-auto pb-6 scrollbar-hide">
+          {/* Sidebar Info */}
+          <div className="lg:col-span-1 space-y-4 sm:overflow-y-auto pb-6 scrollbar-hide">
             <div className="card bg-base-100 border border-base-300 shadow-sm overflow-hidden">
               <div className="bg-primary/5 px-4 py-3 border-b border-base-200">
                 <h3 className="text-[10px] font-black uppercase tracking-widest text-primary">Información General</h3>
@@ -175,14 +177,14 @@ export default function TechnicianTaskClientProfilePage() {
             )}
           </div>
 
-          {/* Equipos List (Independently Scrollable) */}
-          <div className="lg:col-span-2 flex flex-col h-full overflow-hidden">
+          {/* Equipos List */}
+          <div className="lg:col-span-2 flex flex-col h-full sm:overflow-hidden pb-10">
             <div className="flex items-center justify-between px-1 mb-4 flex-none">
               <h2 className="font-black text-lg tracking-tight uppercase text-base-content/40 text-[12px]">Equipos por Atender</h2>
               {allDone && !isCompleted && <span className="text-[10px] font-black text-success uppercase animate-pulse">✓ ¡Todos listos!</span>}
             </div>
 
-            <div className="flex-1 overflow-y-auto pr-2 pb-10 space-y-3 custom-scrollbar">
+            <div className="flex-1 sm:overflow-y-auto pr-2 pb-10 space-y-3 custom-scrollbar">
               {totalClimas === 0 ? (
                 <div className="card bg-base-100 border border-dashed border-base-300 p-12 text-center">
                   <p className="text-base-content/40 font-medium">No hay equipos asignados a este trabajo.</p>
@@ -195,7 +197,7 @@ export default function TechnicianTaskClientProfilePage() {
                   return (
                     <div 
                       key={clima.id} 
-                      className={`group relative card bg-base-100 border transition-all duration-300 overflow-hidden
+                      className={`group relative card bg-base-100 border transition-all duration-300 overflow-hidden active:scale-[0.98]
                         ${done 
                           ? 'border-success/30 bg-success/[0.02] shadow-sm' 
                           : 'border-base-300 hover:border-primary/50 shadow-sm hover:shadow-md'}`}

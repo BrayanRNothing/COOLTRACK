@@ -110,39 +110,112 @@ app.post('/api/auth/bootstrap', async (req, res) => {
   try {
     const count = await prisma.usuario.count({ where: { rol: 'ADMIN' } })
     if (count > 0) return res.status(409).json({ message: 'Ya existe un administrador. Usa el login normal.' })
-    const { nombres, apellidoPaterno, apellidoMaterno, email, username, password } = req.body
-    if (!nombres || !apellidoPaterno || !apellidoMaterno || !email || !username || !password)
-      return res.status(400).json({ message: 'Faltan campos.' })
-    const passwordHash = await bcrypt.hash(password, 10)
-    const usuario = await prisma.usuario.create({
-      data: { nombres, apellidoPaterno, apellidoMaterno, email, username, passwordHash, rol: 'ADMIN' },
+    
+    const { nombres, apellidoPaterno, apellidoMaterno, email, username, password, usuario, contraseña, nombre } = req.body
+    const finalUsername = username || usuario
+    const finalPassword = password || contraseña
+    const finalNombres = nombres || nombre || 'Admin'
+
+    if (!finalUsername || !finalPassword || !email)
+      return res.status(400).json({ message: 'Faltan campos (usuario/email/password).' })
+
+    const passwordHash = await bcrypt.hash(finalPassword, 10)
+    const user = await prisma.usuario.create({
+      data: { 
+        nombres: finalNombres, 
+        apellidoPaterno: apellidoPaterno || 'Sistema', 
+        apellidoMaterno: apellidoMaterno || 'Cooltrack', 
+        email, 
+        username: finalUsername, 
+        passwordHash, 
+        rol: 'ADMIN' 
+      },
       select: usuarioSafeSelect,
     })
-    return res.status(201).json(usuario)
+    return res.status(201).json(user)
   } catch (error) { return handlePrismaError(error, res, 'Error al crear primer admin.') }
+})
+
+// Register (for compatibility with modern frontends)
+app.post('/api/auth/register', async (req, res) => {
+  const { username, password, usuario, contraseña, nombre, email, telefono, rol } = req.body
+  const finalUsername = username || usuario
+  const finalPassword = password || contraseña
+  const finalNombres = nombre || finalUsername
+
+  if (!finalUsername || !finalPassword || !email)
+    return res.status(400).json({ message: 'Faltan campos obligatorios.' })
+
+  try {
+    const passwordHash = await bcrypt.hash(finalPassword, 10)
+    const user = await prisma.usuario.create({
+      data: { 
+        nombres: finalNombres, 
+        apellidoPaterno: '', 
+        apellidoMaterno: '', 
+        email, 
+        username: finalUsername, 
+        telefono, 
+        passwordHash, 
+        rol: rol || 'TECNICO_CONTRATISTA' 
+      },
+      select: usuarioSafeSelect,
+    })
+    const token = jwt.sign(
+      { id: user.id, username: user.username, email: user.email, rol: user.rol }, 
+      JWT_SECRET, 
+      { expiresIn: '7d' }
+    )
+    return res.status(201).json({ token, user, usuario: user })
+  } catch (error) { return handlePrismaError(error, res, 'Error al registrar usuario.') }
 })
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
 app.post('/api/auth/login', async (req, res) => {
-  const { username, password } = req.body
-  if (!username || !password) return res.status(400).json({ message: 'Usuario y contraseña son requeridos.' })
+  const { username, password, usuario, contraseña, contrasena, pass } = req.body
+  const finalUsername = username || usuario
+  const finalPassword = password || contraseña || contrasena || pass
+
+  console.log(`[AUTH] Intento de login. Usuario: "${finalUsername}". Keys recibidas: ${Object.keys(req.body).join(', ')}`)
+
+  if (!finalUsername || !finalPassword) {
+    return res.status(400).json({ message: 'Usuario y contraseña son requeridos.' })
+  }
 
   try {
-    const usuario = await prisma.usuario.findUnique({ where: { username } })
-    if (!usuario) return res.status(401).json({ message: 'Credenciales incorrectas.' })
+    const user = await prisma.usuario.findUnique({ where: { username: finalUsername } })
+    
+    if (!user) {
+      console.warn(`[AUTH] Usuario no encontrado: "${finalUsername}"`)
+      return res.status(401).json({ message: 'Credenciales incorrectas.' })
+    }
 
-    const valid = await bcrypt.compare(password, usuario.passwordHash)
-    if (!valid) return res.status(401).json({ message: 'Credenciales incorrectas.' })
+    const valid = await bcrypt.compare(finalPassword, user.passwordHash)
+    if (!valid) {
+      console.warn(`[AUTH] Contraseña incorrecta para: "${finalUsername}"`)
+      return res.status(401).json({ message: 'Credenciales incorrectas.' })
+    }
+
+    console.log(`[AUTH] Login exitoso: "${finalUsername}" (${user.rol})`)
 
     const token = jwt.sign(
-      { id: usuario.id, username: usuario.username, email: usuario.email, rol: usuario.rol, nombres: usuario.nombres, apellidoPaterno: usuario.apellidoPaterno },
+      { 
+        id: user.id, 
+        username: user.username, 
+        email: user.email, 
+        rol: user.rol, 
+        nombres: user.nombres, 
+        apellidoPaterno: user.apellidoPaterno 
+      },
       JWT_SECRET,
       { expiresIn: '7d' }
     )
-    const { passwordHash, ...safeUser } = usuario
+    
+    const { passwordHash, ...safeUser } = user
     return res.json({ token, user: safeUser })
   } catch (error) {
+    console.error('[AUTH] Error en login:', error)
     return handlePrismaError(error, res, 'Error al iniciar sesión.')
   }
 })

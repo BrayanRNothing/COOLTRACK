@@ -43,3 +43,8 @@ body {
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
+
+/* Safe areas for mobile */
+.pb-safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}

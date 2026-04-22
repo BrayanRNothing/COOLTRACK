@@ -37,7 +37,21 @@ export default function ClientsPage() {
 
   useEffect(() => { fetchData() }, [fetchData])
 
-  const openCreate = () => { setForm(emptyForm); setFormError(''); setModal('create') }
+  const openCreate = () => { 
+    // Generate default client code based on existing clients
+    const lastCode = clientes.length > 0 
+      ? Math.max(...clientes.map(c => {
+          const num = parseInt(c.numeroCliente.replace(/\D/g, ''));
+          return isNaN(num) ? 0 : num;
+        }), 0)
+      : 0;
+    
+    const nextCode = `CLI-${String(lastCode + 1).padStart(3, '0')}`;
+    
+    setForm({ ...emptyForm, numeroCliente: nextCode }); 
+    setFormError(''); 
+    setModal('create'); 
+  }
   const openEdit = (client) => { setSelectedClient(client); setForm({ numeroCliente: client.numeroCliente, nombreOEmpresa: client.nombreOEmpresa, ciudad: client.ciudad || '', telefono: client.telefono || '', email: client.email || '' }); setFormError(''); setModal('edit') }
   const openDelete = (client) => { setSelectedClient(client); setModal('delete') }
   const openAssign = (client) => { setSelectedClient(client); setFormError(''); setModal('assign') }
