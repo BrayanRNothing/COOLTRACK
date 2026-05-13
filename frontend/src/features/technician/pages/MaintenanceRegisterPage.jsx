@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSearchParams, useNavigate, Link } from 'react-router-dom'
-import Button from '../../../shared/ui/Button'
 import Breadcrumbs from '../../../shared/ui/Breadcrumbs'
 import { useWorkData } from '../../../app/providers/useWorkData'
 
@@ -74,23 +73,23 @@ function CameraModal({ slotIndex, onCapture, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-black">
+    <div className="fixed inset-0 z-50 flex flex-col bg-slate-950">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 pt-safe pt-4 pb-3 bg-black/80 backdrop-blur-sm">
+      <div className="flex items-center justify-between px-6 pt-safe pt-5 pb-4 bg-slate-950/80 backdrop-blur-sm">
         <div className="flex items-center gap-2">
-          <span className="text-white/60 text-xs font-bold uppercase tracking-widest">Cámara · Foto {slotIndex + 1}</span>
+          <span className="text-white/60 text-[10px] font-black uppercase tracking-widest">Cámara · Foto {slotIndex + 1}</span>
         </div>
-        <button onClick={handleClose} className="text-white/70 hover:text-white text-2xl leading-none transition-colors">✕</button>
+        <button onClick={handleClose} className="text-white/70 hover:text-white text-xl leading-none transition-colors">✕</button>
       </div>
 
       {/* Viewfinder */}
-      <div className="relative flex-1 overflow-hidden">
+      <div className="relative flex-1 overflow-hidden bg-black">
         {error ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-8 text-center">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-8 text-center bg-slate-900">
             <span className="text-5xl">📷</span>
             <p className="text-white/70 text-sm font-medium leading-relaxed">{error}</p>
             <p className="text-white/40 text-xs">Verifica que hayas dado permisos de cámara al navegador.</p>
-            <button onClick={handleClose} className="mt-2 px-6 py-2 rounded-full bg-white/10 text-white text-sm font-bold hover:bg-white/20 transition-colors">
+            <button onClick={handleClose} className="mt-2 px-6 py-3 rounded-xl bg-white/10 text-white text-xs font-black uppercase tracking-widest hover:bg-white/20 transition-colors">
               Cerrar
             </button>
           </div>
@@ -105,16 +104,16 @@ function CameraModal({ slotIndex, onCapture, onClose }) {
             />
             {/* Crosshair guide */}
             <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-              <div className="w-64 h-48 border-2 border-white/30 rounded-xl relative">
-                <span className="absolute -top-px -left-px w-6 h-6 border-t-2 border-l-2 border-white rounded-tl-xl" />
-                <span className="absolute -top-px -right-px w-6 h-6 border-t-2 border-r-2 border-white rounded-tr-xl" />
-                <span className="absolute -bottom-px -left-px w-6 h-6 border-b-2 border-l-2 border-white rounded-bl-xl" />
-                <span className="absolute -bottom-px -right-px w-6 h-6 border-b-2 border-r-2 border-white rounded-br-xl" />
+              <div className="w-64 h-48 border-2 border-white/20 rounded-2xl relative">
+                <span className="absolute -top-px -left-px w-6 h-6 border-t-2 border-l-2 border-white rounded-tl-2xl" />
+                <span className="absolute -top-px -right-px w-6 h-6 border-t-2 border-r-2 border-white rounded-tr-2xl" />
+                <span className="absolute -bottom-px -left-px w-6 h-6 border-b-2 border-l-2 border-white rounded-bl-2xl" />
+                <span className="absolute -bottom-px -right-px w-6 h-6 border-b-2 border-r-2 border-white rounded-br-2xl" />
               </div>
             </div>
-            <div className="absolute bottom-4 left-4 right-4 flex items-center justify-center gap-2">
-              <span className="text-white/40 text-[10px] font-bold uppercase tracking-widest text-center">
-                📍 Se registrará la ubicación GPS al capturar
+            <div className="absolute bottom-6 left-4 right-4 flex items-center justify-center gap-2">
+              <span className="bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-lg text-white/70 text-[9px] font-black uppercase tracking-widest text-center shadow-lg">
+                📍 Se registrará la ubicación GPS
               </span>
             </div>
           </>
@@ -123,16 +122,16 @@ function CameraModal({ slotIndex, onCapture, onClose }) {
 
       {/* Capture Button */}
       {!error && (
-        <div className="flex items-center justify-center py-8 bg-black/80">
+        <div className="flex items-center justify-center py-10 bg-slate-950/90 border-t border-white/10">
           <button
             onClick={handleCapture}
             disabled={capturing}
-            className="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-2xl shadow-white/30 active:scale-90 transition-transform disabled:opacity-50 disabled:scale-100"
+            className="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-[0_0_40px_rgba(255,255,255,0.2)] active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
           >
             {capturing ? (
-              <span className="w-8 h-8 rounded-full border-4 border-black/30 border-t-black animate-spin" />
+              <span className="w-8 h-8 rounded-full border-4 border-slate-300 border-t-slate-900 animate-spin" />
             ) : (
-              <span className="w-14 h-14 rounded-full bg-white border-4 border-black/10 block" />
+              <span className="w-14 h-14 rounded-full bg-white border-4 border-slate-200 block" />
             )}
           </button>
         </div>
@@ -161,7 +160,7 @@ export default function MaintenanceRegisterPage() {
   const [observaciones, setObservaciones] = useState('')
   const [fotos, setFotos] = useState([null, null, null])
   const [previews, setPreviews] = useState([null, null, null])
-  const [geoData, setGeoData] = useState([null, null, null])   // GPS string per photo
+  const [geoData, setGeoData] = useState([null, null, null])
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
@@ -272,15 +271,15 @@ export default function MaintenanceRegisterPage() {
     }
   }
 
-  if (loading) return <div className="flex justify-center p-12"><span className="loading loading-spinner loading-lg text-primary" /></div>
-  if (error) return <div className="alert alert-error mt-4 font-bold">{error}</div>
+  if (loading) return <div className="flex justify-center p-12"><span className="loading loading-spinner loading-lg text-blue-600" /></div>
+  if (error) return <div className="p-4 bg-red-50 text-red-600 rounded-2xl border border-red-100 font-bold text-sm">{error}</div>
 
   if (success) return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] gap-6 animate-in fade-in zoom-in duration-500">
-      <div className="w-24 h-24 bg-success/20 text-success rounded-full flex items-center justify-center text-5xl animate-bounce">✓</div>
+      <div className="w-24 h-24 bg-emerald-50 border-2 border-emerald-100 text-emerald-500 rounded-[2rem] flex items-center justify-center text-5xl shadow-xl shadow-emerald-500/10">✓</div>
       <div className="text-center">
-        <h2 className="text-3xl font-black mb-2">¡Todo Listo!</h2>
-        <p className="text-base-content/60 font-medium italic">El mantenimiento ha sido registrado con éxito.</p>
+        <h2 className="text-2xl font-black text-slate-900 mb-1">¡Registro Exitoso!</h2>
+        <p className="text-slate-500 text-sm font-bold tracking-wide">El mantenimiento ha sido guardado correctamente.</p>
       </div>
     </div>
   )
@@ -295,9 +294,9 @@ export default function MaintenanceRegisterPage() {
         />
       )}
 
-      <section className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <section className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
         {/* Navigation Header */}
-        <div className="sticky top-0 z-30 bg-base-100/80 backdrop-blur-md pt-3 pb-3 border-b border-base-200 -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="sticky top-0 z-30 pt-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
               <Breadcrumbs items={[
@@ -306,49 +305,50 @@ export default function MaintenanceRegisterPage() {
               ]} />
             </div>
             <Link 
-              className="btn btn-xs btn-ghost opacity-50 font-bold uppercase text-[9px] flex-shrink-0" 
+              className="text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-700 transition-colors flex items-center gap-1.5" 
               to={asignacionId ? `/tecnico/dashboard/mision/${asignacionId}` : '/tecnico/dashboard'}
             >
-              ✕ Salir
+              ✕ Cancelar
             </Link>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-12 gap-8 items-start">
+        <div className="grid lg:grid-cols-12 gap-6 items-start">
           {/* INFO SIDEBAR */}
           <aside className="lg:col-span-4 space-y-6 lg:sticky lg:top-[88px]">
-            <div className="card bg-base-100 border border-base-300 shadow-xl overflow-hidden">
-              <div className="bg-primary/5 px-6 py-4 border-b border-base-200">
-                <h3 className="text-[10px] font-black uppercase tracking-widest text-primary">Equipo a Registrar</h3>
+            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+              <div className="bg-slate-50 px-6 py-4 border-b border-slate-100">
+                <h3 className="text-[9px] font-black uppercase tracking-widest text-slate-500">Equipo a Registrar</h3>
               </div>
-              <div className="p-5 sm:p-6 space-y-5 sm:space-y-6">
+              <div className="p-5 space-y-5">
                 <div className="space-y-4">
                   <div>
-                    <p className="text-[9px] font-bold uppercase opacity-40 mb-1">Empresa / Cliente</p>
-                    <p className="text-base font-black leading-tight tracking-tight">
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Empresa / Cliente</p>
+                    <p className="text-base font-black text-slate-900 leading-tight">
                       {asignacion?.cliente?.nombreOEmpresa || clima?.cliente?.nombreOEmpresa || 'Cliente seleccionado'}
                     </p>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 pt-4 border-t border-base-200">
+                  <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
                     <div>
-                      <p className="text-[10px] font-bold uppercase opacity-40 mb-1">Serial</p>
-                      <p className="font-black text-primary text-sm tracking-widest">{clima?.numeroSerie}</p>
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Serial</p>
+                      <p className="font-black text-blue-600 text-sm tracking-widest">{clima?.numeroSerie}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold uppercase opacity-40 mb-1">Modelo</p>
-                      <p className="font-bold text-sm truncate">{clima?.marca} · {clima?.modelo}</p>
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Modelo</p>
+                      <p className="font-bold text-slate-900 text-sm truncate">{clima?.marca} · {clima?.modelo}</p>
                     </div>
                   </div>
                 </div>
-                <div className="bg-base-200/50 rounded-2xl p-5 border border-base-300 flex items-center justify-between">
+
+                <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100 flex items-center justify-between">
                   <div>
-                    <p className="text-[10px] font-black uppercase opacity-40">Mantenimientos</p>
-                    <p className="text-[11px] font-bold opacity-60 mt-0.5">Año {selectedYear}</p>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Mantenimientos</p>
+                    <p className="text-[10px] font-bold text-slate-500 mt-0.5">Año {selectedYear}</p>
                   </div>
                   <div className="flex flex-col items-end">
-                    <div className={`text-xl font-black leading-none ${limitReached ? 'text-error' : 'text-primary'}`}>
+                    <div className={`text-2xl font-black leading-none tracking-tighter ${limitReached ? 'text-red-500' : 'text-blue-600'}`}>
                       {limitReached ? '3' : mantsInSelectedYear + 1}
-                      <span className="text-xs opacity-30 ml-0.5">/3</span>
+                      <span className="text-xs opacity-40 ml-0.5">/3</span>
                     </div>
                     <div className="flex gap-1 mt-1.5">
                       {[1, 2, 3].map(i => (
@@ -356,8 +356,8 @@ export default function MaintenanceRegisterPage() {
                           key={i} 
                           className={`h-1.5 w-4 rounded-full transition-all ${
                             i <= mantsInSelectedYear || (i === mantsInSelectedYear + 1 && !limitReached)
-                            ? (i <= mantsInSelectedYear ? 'bg-success/40' : 'bg-primary animate-pulse shadow-[0_0_8px_rgba(147,51,234,0.4)]')
-                            : 'bg-base-300'
+                            ? (i <= mantsInSelectedYear ? 'bg-emerald-400' : 'bg-blue-500 animate-pulse')
+                            : 'bg-slate-200'
                           }`}
                         />
                       ))}
@@ -370,17 +370,18 @@ export default function MaintenanceRegisterPage() {
 
           {/* MAIN FORM */}
           <main className="lg:col-span-8">
-            <form onSubmit={handleSubmit} className="card bg-base-100 border border-base-300 shadow-xl overflow-hidden">
-              <div className="bg-base-200/50 px-8 py-5 border-b border-base-300 flex items-center justify-between">
-                <h2 className="font-black text-xl tracking-tight">Hoja de Servicio Digital</h2>
+            <form onSubmit={handleSubmit} className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
+              <div className="bg-white px-6 py-5 border-b border-slate-100 flex items-center gap-3">
+                <span className="w-8 h-8 rounded-lg bg-slate-50 text-slate-600 flex items-center justify-center border border-slate-100 text-sm">📋</span>
+                <h2 className="font-black text-lg text-slate-900 tracking-tight">Hoja de Servicio Digital</h2>
               </div>
-              <div className="p-5 sm:p-8 space-y-6 sm:space-y-8">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <label className="form-control w-full">
-                    <span className="text-[10px] font-black uppercase opacity-40 mb-2 ml-1">Fecha y Hora del Servicio *</span>
+              <div className="p-6 space-y-5">
+                <div className="grid md:grid-cols-2 gap-5">
+                  <label className="flex flex-col gap-2">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Fecha y Hora del Servicio *</span>
                     <input
                       type="datetime-local"
-                      className="input input-bordered w-full bg-base-200 font-semibold"
+                      className="w-full h-11 px-4 rounded-xl bg-slate-50 border border-slate-200 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                       value={fechaMantenimiento}
                       onChange={e => setFechaMantenimiento(e.target.value)}
                       required
@@ -388,35 +389,44 @@ export default function MaintenanceRegisterPage() {
                     />
                   </label>
                 </div>
-                <label className="form-control w-full">
-                  <span className="text-[10px] font-black uppercase opacity-40 mb-2 ml-1">Observaciones y Hallazgos Técnicos</span>
+                
+                <label className="flex flex-col gap-2">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Observaciones y Hallazgos Técnicos</span>
                   <textarea
-                    className="textarea textarea-bordered w-full min-h-40 bg-base-200 resize-none p-4 text-sm font-medium"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium text-slate-900 min-h-[100px] resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-300"
                     placeholder="Describe el estado del equipo..."
                     value={observaciones}
                     onChange={e => setObservaciones(e.target.value)}
                     disabled={saving || limitReached}
                   />
                 </label>
-                <div className="space-y-4">
+
+                <div className="space-y-3 pt-2 border-t border-slate-100">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase opacity-40 ml-1">Evidencia Fotográfica *</span>
-                    <span className="badge badge-primary badge-sm font-bold">{fotos.filter(Boolean).length} / 3</span>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-600 ml-1">Evidencia Fotográfica *</span>
+                    <span className="text-[9px] font-black px-2.5 py-0.5 bg-blue-50 text-blue-600 rounded-md">{fotos.filter(Boolean).length} / 3</span>
                   </div>
+                  
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {[0, 1, 2].map((index) => (
-                      <div key={index} className="relative group aspect-video sm:aspect-square">
+                      <div key={index} className="relative group aspect-video sm:aspect-[4/3]">
                         {previews[index] ? (
-                          <div className="relative w-full h-full rounded-2xl overflow-hidden border-2 border-primary shadow-xl">
+                          <div className="relative w-full h-full rounded-2xl overflow-hidden border-2 border-emerald-100 shadow-sm bg-slate-100">
                             <img src={previews[index]} alt={`Evidencia ${index + 1}`} className="w-full h-full object-cover" />
                             {geoData[index] && (
-                              <div className="absolute bottom-2 left-2 right-2 bg-black/70 backdrop-blur-sm rounded-lg px-2 py-1 flex items-center gap-1">
-                                <span className="text-[9px]">📍</span>
-                                <span className="text-[9px] text-white/80 font-bold font-mono truncate">{geoData[index]}</span>
+                              <div className="absolute bottom-2 left-2 right-2 bg-slate-900/80 backdrop-blur-md rounded-lg px-2 py-1 flex items-center gap-1 shadow-md">
+                                <span className="text-[8px]">📍</span>
+                                <span className="text-[8px] text-white/90 font-bold font-mono truncate tracking-wider">{geoData[index]}</span>
                               </div>
                             )}
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2">
-                              <button type="button" className="btn btn-circle btn-sm btn-error" onClick={() => removeFoto(index)}>✕</button>
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity">
+                              <button 
+                                type="button" 
+                                className="w-8 h-8 rounded-lg bg-red-500 text-white flex items-center justify-center hover:bg-red-600 hover:scale-105 active:scale-95 transition-all shadow-md text-xs" 
+                                onClick={() => removeFoto(index)}
+                              >
+                                ✕
+                              </button>
                             </div>
                           </div>
                         ) : (
@@ -424,30 +434,44 @@ export default function MaintenanceRegisterPage() {
                             type="button"
                             disabled={limitReached || saving}
                             onClick={() => setCameraSlot(index)}
-                            className="w-full h-full rounded-2xl border-2 border-dashed border-base-300 flex flex-col items-center justify-center hover:border-primary hover:bg-primary/5 transition-all"
+                            className="w-full h-full rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center hover:border-blue-300 hover:bg-blue-50/50 transition-all disabled:opacity-50 group"
                           >
-                            <span className="text-xl mb-2">📷</span>
-                            <span className="text-[10px] font-black uppercase opacity-40 tracking-widest text-center">Foto {index + 1}</span>
+                            <span className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-300 opacity-40 group-hover:opacity-100">📷</span>
+                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-blue-500 transition-colors">Foto {index + 1}</span>
                           </button>
                         )}
                       </div>
                     ))}
                   </div>
                 </div>
+
                 {formError && (
-                  <div className="p-4 rounded-2xl bg-error/10 border border-error/20 flex items-center gap-3">
-                    <span className="text-xl">⚠️</span>
-                    <p className="text-xs font-bold text-error leading-relaxed uppercase">{formError}</p>
+                  <div className="p-3 rounded-xl bg-red-50 border border-red-100 flex items-center gap-2">
+                    <span className="text-lg">⚠️</span>
+                    <p className="text-[10px] font-black tracking-widest text-red-600 uppercase">{formError}</p>
                   </div>
                 )}
+
                 <div className="pt-4">
-                  <Button
+                  <button
                     type="submit"
                     disabled={saving || limitReached}
-                    className="w-full h-16 text-lg font-black shadow-2xl transition-all"
+                    className="w-full h-14 rounded-xl bg-slate-900 text-white text-[11px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-lg shadow-slate-200 disabled:opacity-50 disabled:shadow-none active:scale-[0.98] flex items-center justify-center"
                   >
-                    {uploading ? 'SUBIENDO...' : saving ? 'GUARDANDO...' : '✓ GUARDAR REPORTE'}
-                  </Button>
+                    {uploading ? (
+                      <span className="flex items-center gap-2">
+                        <span className="loading loading-spinner loading-sm" />
+                        Subiendo...
+                      </span>
+                    ) : saving ? (
+                      <span className="flex items-center gap-2">
+                        <span className="loading loading-spinner loading-sm" />
+                        Guardando...
+                      </span>
+                    ) : (
+                      'Guardar Reporte'
+                    )}
+                  </button>
                 </div>
               </div>
             </form>

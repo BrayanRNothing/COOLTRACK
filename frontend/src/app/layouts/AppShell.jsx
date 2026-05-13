@@ -10,7 +10,7 @@ const linksByRole = {
   ],
   TECNICO_CONTRATISTA: [
     { to: '/tecnico/dashboard', label: 'Trabajos', icon: '⚡' },
-    { to: '/tecnico/mantenimientos/nuevo', label: 'Nuevo', icon: '➕' },
+    { to: '/tecnico/mantenimientos/nuevo', label: 'Registrar', icon: '➕' },
     { to: '/tecnico/historial', label: 'Historial', icon: '📜' },
   ],
 }
