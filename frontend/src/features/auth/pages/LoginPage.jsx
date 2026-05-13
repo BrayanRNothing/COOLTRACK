@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../app/providers/useAuth'
-import Button from '../../../shared/ui/Button'
+import logo from '../../../assets/cooltracklogopng.png'
 
 export default function LoginPage() {
   const { login } = useAuth()
@@ -31,103 +31,119 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="relative min-h-[calc(100vh-8rem)] overflow-hidden bg-gradient-to-b from-base-200/70 via-base-100 to-base-100 px-4 py-8 sm:px-6 sm:py-12">
-      <div className="pointer-events-none absolute inset-0 opacity-45">
-        <div className="absolute -top-20 -left-20 h-56 w-56 rounded-full bg-base-content/10 blur-3xl" />
-        <div className="absolute -right-16 bottom-10 h-52 w-52 rounded-full bg-info/10 blur-3xl" />
-      </div>
+    <div
+      className="min-h-screen flex flex-col items-center justify-center px-4 py-12 font-sans relative overflow-hidden"
+      style={{ background: '#f2ecf2' }}
+    >
+      {/* ── Dot grid texture ── */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: 'radial-gradient(circle, #d1c1d1 1.5px, transparent 1.5px)',
+          backgroundSize: '32px 32px',
+          opacity: 0.4,
+        }}
+      />
 
-      <section className="relative mx-auto grid w-full max-w-5xl overflow-hidden rounded-3xl border border-base-300/60 bg-base-100 shadow-2xl shadow-base-content/10 lg:grid-cols-[0.95fr_1.05fr]">
-        <aside className="hidden border-r border-base-300/70 bg-base-200/45 p-8 lg:flex lg:flex-col lg:justify-center">
-          <p className="badge badge-neutral mb-5 w-fit">COOLTRACK</p>
-          <h1 className="text-3xl font-bold leading-tight">Bienvenido de nuevo</h1>
-          <p className="mt-3 text-sm text-base-content/70">
-            Inicia sesión para administrar clientes, asignaciones y mantenimientos desde un solo lugar.
+      {/* ── Unified Floating Container ── */}
+      <div className="relative w-full max-w-md p-12">
+        {/* Logo */}
+        <div className="flex justify-center mb-10">
+          <img
+            src={logo}
+            alt="Cooltrack"
+            className="h-36 w-auto object-contain opacity-90"
+          />
+        </div>
+
+        {/* Title */}
+        <div className="text-center mb-10">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-800">
+            Bienvenido
+          </h1>
+          <p className="mt-2 text-sm font-medium text-slate-500">
+            Ingresa tus datos para continuar
           </p>
+        </div>
 
-          <div className="mt-8 space-y-3">
-            <div className="rounded-xl border border-base-300/70 bg-base-100/90 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-base-content/70">Panel Admin</p>
-              <p className="mt-1 text-sm text-base-content/70">Gestiona técnicos, clientes y equipos.</p>
-            </div>
-            <div className="rounded-xl border border-base-300/70 bg-base-100/90 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-base-content/70">Panel Técnico</p>
-              <p className="mt-1 text-sm text-base-content/70">Consulta tareas y registra mantenimientos.</p>
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Username */}
+          <div className="relative border-b border-slate-300 focus-within:border-slate-800 transition-colors duration-300">
+            <label htmlFor="username" className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
+              Usuario
+            </label>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              autoComplete="username"
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="admin"
+              className="w-full py-3 bg-transparent text-slate-800 placeholder:text-slate-300 focus:outline-none text-base"
+            />
+          </div>
+
+          {/* Password */}
+          <div className="relative border-b border-slate-300 focus-within:border-slate-800 transition-colors duration-300">
+            <label htmlFor="password" className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
+              Contraseña
+            </label>
+            <div className="relative">
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full py-3 bg-transparent text-slate-800 placeholder:text-slate-300 focus:outline-none text-base"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-0 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-800 transition-colors"
+              >
+                {showPassword ? 'Ocultar' : 'Ver'}
+              </button>
             </div>
           </div>
-        </aside>
 
-        <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-10">
-          <p className="badge badge-neutral mb-4 w-fit lg:hidden">COOLTRACK</p>
-          <h2 className="text-2xl font-bold sm:text-3xl">Iniciar sesión</h2>
-          <p className="mt-2 text-sm text-base-content/70">Accede con tu usuario y contraseña registrados.</p>
-
-          <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-            <div className="rounded-2xl border border-base-300/60 bg-base-100 p-5 sm:p-6">
-              <div className="mb-5 flex items-center justify-between gap-3 border-b border-base-300/70 pb-4">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-base-content/50">Acceso a la plataforma</p>
-                  <h3 className="mt-1 text-lg font-semibold">Ingresa tus credenciales</h3>
-                </div>
-                <span className="badge badge-outline badge-sm">Seguro</span>
-              </div>
-
-              <div className="space-y-5">
-                <label className="form-control w-full">
-                  <span className="mb-2.5 text-sm font-semibold text-base-content/85">Usuario</span>
-                  <input
-                    type="text"
-                    className="input input-bordered h-12 w-full border-base-300 bg-base-100 px-4"
-                    placeholder="tu_usuario"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                    autoFocus
-                    autoComplete="username"
-                  />
-                </label>
-
-                <label className="form-control w-full">
-                  <div className="mb-2.5 flex items-center justify-between gap-2">
-                    <span className="text-sm font-semibold text-base-content/85">Contraseña</span>
-                    <button
-                      type="button"
-                      className="btn btn-ghost btn-xs h-7 min-h-7 px-2 text-base-content/70 hover:text-base-content"
-                      onClick={() => setShowPassword((prev) => !prev)}
-                    >
-                      {showPassword ? 'Ocultar' : 'Mostrar'}
-                    </button>
-                  </div>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    className="input input-bordered h-12 w-full border-base-300 bg-base-100 px-4"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    autoComplete="current-password"
-                  />
-                </label>
-              </div>
+          {/* Error */}
+          {error && (
+            <div className="text-center">
+              <p className="text-xs font-bold text-red-500 animate-pulse">{error}</p>
             </div>
+          )}
 
-            {error && (
-              <div
-                role="alert"
-                aria-live="polite"
-                className="rounded-xl border border-error/30 bg-error/10 px-3 py-2 text-sm text-error"
-              >
-                {error}
-              </div>
-            )}
+          {/* Submit */}
+          <div className="pt-4">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm tracking-widest hover:bg-black transition-all duration-300 active:scale-[0.98] disabled:opacity-50"
+            >
+              {loading ? 'CARGANDO...' : 'INICIAR SESIÓN'}
+            </button>
+          </div>
+        </form>
 
-            <Button type="submit" variant="neutral" className="w-full h-12 text-base font-semibold" disabled={loading}>
-              {loading && <span className="loading loading-spinner loading-xs" aria-hidden="true" />}
-              {loading ? 'Ingresando...' : 'Ingresar al sistema'}
-            </Button>
-          </form>
+        {/* Security Note */}
+        <div className="mt-12 text-center">
+          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.3em]">
+            Cooltrack · Secure Access
+          </p>
         </div>
-      </section>
-    </main>
+      </div>
+
+      {/* Page Footer */}
+      <p className="mt-10 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+        © {new Date().getFullYear()} All Rights Reserved
+      </p>
+    </div>
   )
 }
